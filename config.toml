@@ -1,5 +1,5 @@
 # The base URL of the site; the only required configuration variable.
-base_url = "https://theanxiuser.github.io/thecipherdiary"
+base_url = "https://thecipherdiary.bishall.com.np"
 
 # The site title and description; used in feeds by default.
 title = "TheCipherDiary"
