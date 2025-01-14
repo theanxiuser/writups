@@ -1,6 +1,6 @@
 +++
-title = "Hello World: Welcome to TheCipherDiary"
-description = "A simple introduction to TheCipherDiary with a Hello World post."
+title = "Hello World: Welcome to Writups"
+description = "A simple introduction to Writups with a Hello World post."
 date = 2024-10-21
 slug = "hello-world"
 
@@ -11,7 +11,7 @@ tags = ["cybersecurity", "technology"]
 
 ## Hello World!
 
-Welcome to **TheCipherDiary**, where we explore the latest in **cybersecurity**, **technology trends**, and **hacking tutorials**.
+Welcome to **Writups**, where we explore and provide the writups.
 
 In this very first post, we say a simple **Hello World** to kick off what will be a journey through the technical landscapes of cybersecurity and emerging technologies.
 
