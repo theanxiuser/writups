@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1" name="viewport" />
+  <meta content="#ffffff" name="theme-color" />
+  <meta content="#da532c" name="msapplication-TileColor" />
+
+  
+<link rel="canonical" href="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups/investigating-windows">
+<meta name="description" content="Investigating the hacked windows machine.">
+<meta name="keywords" content="investigating windows, tryhackme, forensics">
+<meta name="robots" content="index, follow">
+
+<meta property="og:title" content="Investigating Windows - TryHackMe Writup">
+<meta property="og:description" content="Investigating the hacked windows machine.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups/investigating-windows">
+<meta property="og:image" content="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups/images/avatar.jpg">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Investigating Windows - TryHackMe Writup">
+<meta name="twitter:description" content="Investigating the hacked windows machine.">
+<meta name="twitter:image" content="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups/images/avatar.jpg">
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups/investigating-windows"
+    },
+    "headline": "Investigating Windows - TryHackMe Writup",
+    "description": "Investigating the hacked windows machine.",
+    "author": {
+      "@type": "Person",
+      "name": "вιѕнαℓυ"
+    },
+    "datePublished": "2024-10-23",
+    "image": "https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups/images/cover.jpg",
+    "publisher": {
+      "@type": "Organization",
+      "name": "Writups",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups/images/human_avatar.jpg"
+      }
+    },
+    "articleBody": "<div style="display: flex; align-items: center;">
+  <div>
+    <img src="investigating_windows.png" alt="Investigating Windows" width="100"/>
+  </div>
+  <div style="margin-left: 10px;">
+    <i>A windows machine has been hacked, its your job to go investigate this windows machine and find clues to what the hacker might have done.</i>
+  </div>
+</div>
+<p>Target IP: 10.10.99.65</p>
+<h3 id="1-version-and-year-of-windows-machine">1. Version and year of windows machine</h3>
+<p>This can be found easily through properties. Also there is command <code>Get-ComputerInfo -Property &quot;Os*&quot;</code> for powershell to get inforation. This is Windows S***** 20**</p>
+<h3 id="2-last-user-logged-in">2. Last user logged in</h3>
+<p>First need to get all the users through <code>Get-LocalUser</code>, we get</p>
+<pre>
+Name           Enabled Description
+----           ------- -----------
+Administrator  True    Built-in account for administering the computer/domain
+DefaultAccount False   A user account managed by the system.
+Guest          True    Built-in account for guest access to the computer/domain
+Jenny          True
+John           True
+</pre>
+<p>Now need to check the last login of each user, and found result as</p>
+<p><img src="https://theanxiuser.github.io/writups/chapters/investigating-windows/last_logon.png" alt="alt text" /></p>
+<h3 id="3-when-did-john-log-onto-the-system-last">3. When did John log onto the system last?</h3>
+<p>We already have this answer in above question</p>
+<h3 id="4-what-ip-does-the-system-connect-to-when-it-first-starts">4. What IP does the system connect to when it first starts?</h3>
+<p>We need to check system startup connection by using registry editor.</p>
+<p>The IP is found in path <code>HKEY_LOCAL_MACHINE &gt; SOFTWARE &gt; Microsoft &gt; Windows &gt; CurrentVersion &gt; Run</code></p>
+<h3 id="5-what-two-accounts-had-administrative-privileges-other-than-the-administrator-user">5. What two accounts had administrative privileges (other than the Administrator user)?</h3>
+<p>We need to find out the user, that are the group member of group <code>Administrators</code></p>
+<p><img src="https://theanxiuser.github.io/writups/chapters/investigating-windows/admin_privileges.png" alt="alt text" /></p>
+<h3 id="6-whats-the-name-of-the-scheduled-task-that-is-malicous">6. Whats the name of the scheduled task that is malicous.</h3>
+<p>Schedule task can be get using command <code>Get-ScheduledTask</code>. Now looking into taskpath <code>\</code>, we have only 6 tasks. By analyzing one task <code>Clean **** ******</code> seems to be malicious.</p>
+<h3 id="7-what-file-was-the-task-trying-to-run-daily">7. What file was the task trying to run daily?</h3>
+<p>Need to find out the action done by this task. We can find out malicious binaries.</p>
+<pre>
+$task = Get-ScheduledTask | Where TaskName -EQ "Clean **** ******"
+$task.Actions
+</pre>
+<p>Then we get the binary in Execute variable.</p>
+<h3 id="8-what-port-did-this-file-listen-locally-for">8. What port did this file listen locally for?</h3>
+<p>As the file is using netcat, looking into the argument variable we have the port number <code>13**</code>.</p>
+<h3 id="9-when-did-jenny-last-logon">9. When did Jenny last logon?</h3>
+<p>We already have the answer.</p>
+<h3 id="10-at-what-date-did-the-compromise-take-place">10. At what date did the compromise take place?</h3>
+<p>This is the malicious file creation date, look into the file properties of above executable file.</p>
+<h3 id="11-during-the-compromise-at-what-time-did-windows-first-assign-special-privileges-to-a-new-logon">11. During the compromise, at what time did Windows first assign special privileges to a new logon?</h3>
+<p>Need to look into event viewer, of the file created date. Then looking into security log of that day. Open <code>Event Viewer</code> application and apply filter/search. There from last, look for Task Category <code>Security Group Management</code> and we got the date and time.</p>
+<p><img src="https://theanxiuser.github.io/writups/chapters/investigating-windows/event_viewer.png" alt="alt text" /></p>
+<h3 id="12-what-tool-was-used-to-get-windows-passwords">12. What tool was used to get Windows passwords?</h3>
+<p>By looking into TMP directory, we can findout the tool and it is <code>mimi****</code>.</p>
+<h3 id="13-what-was-the-attackers-external-control-and-command-servers-ip">13. What was the attackers external control and command servers IP?</h3>
+<p>Also known as C2 server, used to control the attacker machine from remote area. Need to look into hosts file which is found in the location <code>C:\Windows\System32\drivers\etc</code>. At last of the file we got the IP address, wher edomain is set to goodle.com</p>
+<h3 id="14-what-was-the-extension-name-of-the-shell-uploaded-via-the-servers-website">14. What was the extension name of the shell uploaded via the servers website?</h3>
+<p>Shell should be uploaded via web, so need to look into webroot directory. Lets look into wwwroot dir.
+This is in location <code>C:\inetpub\wwwroot</code>. The extension is found there.</p>
+<h3 id="15-what-was-the-last-port-the-attacker-opened">15. What was the last port the attacker opened?</h3>
+<p>The port should be open for communication and can be found in firewall rule. Lets look into firewall configuration.</p>
+<p>Inside Inbound Rules, there is a rule name <code>Allow outside connection for development</code>, looking into Protocols and Ports, we have the port opened by attacker as <code>13**</code>. </p>
+<h3 id="16-check-for-dns-poisoning-what-site-was-targeted">16. Check for DNS poisoning, what site was targeted?</h3>
+<p>We already have this answer in the hosts file, which is the domain name pointing to the attacker IP.</p>
+<p>This CTF covered the simple forensics of a compromised windows server and backtrace to the attacker.</p>
+<p>Happy Hacking !!</p>
+"
+  }
+  </script>
+   
+
+
+  
+  
+  <link href='&#x2F;icons&#x2F;site.webmanifest' rel="manifest" />
+  
+  
+  <link color="#5bbad5" href='&#x2F;icons&#x2F;safari-pinned-tab.svg' rel="mask-icon" />
+  
+  
+  <link href='&#x2F;icons&#x2F;favicon-16x16.png' rel="icon" sizes="16x16" type="image/png" />
+  
+  
+  <link href='&#x2F;icons&#x2F;favicon-32x32.png' rel="icon" sizes="32x32" type="image/png" />
+  
+  
+  <link href='&#x2F;icons&#x2F;apple-touch-icon.png' rel="apple-touch-icon" sizes="180x180" />
+  
+
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/galleria@1.6.1/dist/themes/folio/galleria.folio.min.css" integrity="sha384-+rY0QD+LRnTOquDMzGa9lXU6jIwdiQuwCJQ2cdcW0qeP/0UbjQCZlXnRsUMA+9pH" crossorigin="anonymous">
+  
+
+  
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1.9.1/css/academicons.min.css" integrity="sha384-FIue+PI4SsI9XfHCz8dBLg33b0c1fMJgNU3X//L26FYbGnlSEfWmNT7zgWc2N9b6" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link href="https://theanxiuser.github.io/writups/deep-thought.css" rel="stylesheet" />
+  
+  
+
+  <title>
+    
+Writups | Investigating Windows - TryHackMe Writup
+
+  </title>
+
+  
+  
+  
+
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.css" integrity="sha384-R4558gYOUz8mP9YWpZJjofhk+zx0AS11p36HnD2ZKj/6JR5z27gSSULCNHIRReVs" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.js" integrity="sha384-z1fJDqw8ZApjGO3/unPWUPsIymfsJmyrDVWC8Tv/a1HeOtGmkwNd/7xUS0Xcnvsx" crossorigin="anonymous"></script>
+
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/contrib/mathtex-script-type.min.js" integrity="sha384-jiBVvJ8NGGj5n7kJaiWwWp9AjC+Yh8rhZY3GtAX8yU28azcLgoRo4oukO87g7zDT" crossorigin="anonymous"></script>
+  
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/contrib/auto-render.min.js" integrity="sha384-+XBljXPPiv+OzfbB3cVmLHf4hdUFHlWNZN5spNQ7rmHTXpd7WvJum6fIACpNNfIR" crossorigin="anonymous"></script>
+  
+  
+</head>
+
+<body class="has-background-white">
+  <nav aria-label="section navigation" class="navbar is-light" role="navigation">
+    <div class="container">
+      <div class="navbar-brand">
+        <a class="navbar-item is-size-5 has-text-weight-bold" href="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups">Writups</a>
+        <a aria-expanded="false" aria-label="menu" class="navbar-burger burger" data-target="navMenu" role="button">
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+        </a>
+      </div>
+      <div class="navbar-menu" id="navMenu">
+        <div class="navbar-end has-text-centered">
+          
+          
+          
+          <a class="navbar-item has-text-weight-semibold" href="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;">
+            Home
+          </a>
+          
+          <a class="navbar-item has-text-weight-semibold" href="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;chapters">
+            Chapters
+          </a>
+          
+          <a class="navbar-item has-text-weight-semibold" href="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;tags">
+            Tags
+          </a>
+          
+          <a class="navbar-item has-text-weight-semibold" href="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;categories">
+            Categories
+          </a>
+          
+          
+          
+          <a class="navbar-item" id="nav-search" title="Search" data-target="#search-modal">
+            <span class="icon">
+              <i class="fas fa-search"></i>
+            </span>
+          </a>
+          <a class="navbar-item" id="dark-mode" title="Switch to dark theme">
+            <span class="icon">
+              <i class="fas fa-adjust"></i>
+            </span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  
+  
+
+  
+<section class="section">
+  <div class="container">
+    <div class="columns">
+      <div class="column is-8 is-offset-2">
+        <article class="box">
+          <h1 class="title">
+            Investigating Windows - TryHackMe Writup
+          </h1>
+          <p class="subtitle">Investigating the hacked windows machine.</p>
+          <div class="columns is-multiline is-gapless">
+            <div class="column is-8">
+              
+<span class="icon-text has-text-grey">
+  <span class="icon">
+    <i class="fas fa-user"></i>
+  </span>
+  <span>вιѕнαℓυ published on</span>
+  <span class="icon">
+    <i class="far fa-calendar-alt"></i>
+  </span>
+  <span><time datetime="2024-10-23">October 23, 2024</time></span>
+</span>
+
+            </div>
+            <div class="column is-4 has-text-right-desktop">
+              
+<span class="icon-text has-text-grey">
+  <span class="icon">
+    <i class="far fa-clock"></i>
+  </span>
+  <span>4 min,</span>
+  <span class="icon">
+    <i class="fas fa-pencil-alt"></i>
+  </span>
+  <span>676 words</span>
+</span>
+
+            </div>
+            <div class="column">
+              
+              
+<p>
+  Categories:
+  
+  <a class="has-text-info-dark has-text-weight-semibold" href="https://theanxiuser.github.io/writups/categories/tryhackme/">
+    <span class="icon-text">
+      <span class="icon">
+        <i class="fas fa-cube"></i>
+      </span>
+      <span>TryHackMe</span>
+    </span>
+  </a>
+  
+  <a class="has-text-info-dark has-text-weight-semibold" href="https://theanxiuser.github.io/writups/categories/writups/">
+    <span class="icon-text">
+      <span class="icon">
+        <i class="fas fa-cube"></i>
+      </span>
+      <span>Writups</span>
+    </span>
+  </a>
+  
+</p>
+
+              
+            </div>
+            <div class="column has-text-right-desktop">
+              
+              
+<p>
+  Tags:
+  
+  <a class="has-text-info-dark has-text-weight-semibold" href="https://theanxiuser.github.io/writups/tags/investigating-windows/">
+    <span class="icon-text">
+      <span class="icon">
+        <i class="fas fa-tag"></i>
+      </span>
+      <span>investigating windows</span>
+    </span>
+  </a>
+  
+  <a class="has-text-info-dark has-text-weight-semibold" href="https://theanxiuser.github.io/writups/tags/tryhackme/">
+    <span class="icon-text">
+      <span class="icon">
+        <i class="fas fa-tag"></i>
+      </span>
+      <span>tryhackme</span>
+    </span>
+  </a>
+  
+  <a class="has-text-info-dark has-text-weight-semibold" href="https://theanxiuser.github.io/writups/tags/forensics/">
+    <span class="icon-text">
+      <span class="icon">
+        <i class="fas fa-tag"></i>
+      </span>
+      <span>forensics</span>
+    </span>
+  </a>
+  
+</p>
+
+              
+            </div>
+          </div>
+          <div class="content mt-2">
+            <div style="display: flex; align-items: center;">
+  <div>
+    <img src="investigating_windows.png" alt="Investigating Windows" width="100"/>
+  </div>
+  <div style="margin-left: 10px;">
+    <i>A windows machine has been hacked, its your job to go investigate this windows machine and find clues to what the hacker might have done.</i>
+  </div>
+</div>
+<p>Target IP: 10.10.99.65</p>
+<h3 id="1-version-and-year-of-windows-machine">1. Version and year of windows machine</h3>
+<p>This can be found easily through properties. Also there is command <code>Get-ComputerInfo -Property &quot;Os*&quot;</code> for powershell to get inforation. This is Windows S***** 20**</p>
+<h3 id="2-last-user-logged-in">2. Last user logged in</h3>
+<p>First need to get all the users through <code>Get-LocalUser</code>, we get</p>
+<pre>
+Name           Enabled Description
+----           ------- -----------
+Administrator  True    Built-in account for administering the computer/domain
+DefaultAccount False   A user account managed by the system.
+Guest          True    Built-in account for guest access to the computer/domain
+Jenny          True
+John           True
+</pre>
+<p>Now need to check the last login of each user, and found result as</p>
+<p><img src="https://theanxiuser.github.io/writups/chapters/investigating-windows/last_logon.png" alt="alt text" /></p>
+<h3 id="3-when-did-john-log-onto-the-system-last">3. When did John log onto the system last?</h3>
+<p>We already have this answer in above question</p>
+<h3 id="4-what-ip-does-the-system-connect-to-when-it-first-starts">4. What IP does the system connect to when it first starts?</h3>
+<p>We need to check system startup connection by using registry editor.</p>
+<p>The IP is found in path <code>HKEY_LOCAL_MACHINE &gt; SOFTWARE &gt; Microsoft &gt; Windows &gt; CurrentVersion &gt; Run</code></p>
+<h3 id="5-what-two-accounts-had-administrative-privileges-other-than-the-administrator-user">5. What two accounts had administrative privileges (other than the Administrator user)?</h3>
+<p>We need to find out the user, that are the group member of group <code>Administrators</code></p>
+<p><img src="https://theanxiuser.github.io/writups/chapters/investigating-windows/admin_privileges.png" alt="alt text" /></p>
+<h3 id="6-whats-the-name-of-the-scheduled-task-that-is-malicous">6. Whats the name of the scheduled task that is malicous.</h3>
+<p>Schedule task can be get using command <code>Get-ScheduledTask</code>. Now looking into taskpath <code>\</code>, we have only 6 tasks. By analyzing one task <code>Clean **** ******</code> seems to be malicious.</p>
+<h3 id="7-what-file-was-the-task-trying-to-run-daily">7. What file was the task trying to run daily?</h3>
+<p>Need to find out the action done by this task. We can find out malicious binaries.</p>
+<pre>
+$task = Get-ScheduledTask | Where TaskName -EQ "Clean **** ******"
+$task.Actions
+</pre>
+<p>Then we get the binary in Execute variable.</p>
+<h3 id="8-what-port-did-this-file-listen-locally-for">8. What port did this file listen locally for?</h3>
+<p>As the file is using netcat, looking into the argument variable we have the port number <code>13**</code>.</p>
+<h3 id="9-when-did-jenny-last-logon">9. When did Jenny last logon?</h3>
+<p>We already have the answer.</p>
+<h3 id="10-at-what-date-did-the-compromise-take-place">10. At what date did the compromise take place?</h3>
+<p>This is the malicious file creation date, look into the file properties of above executable file.</p>
+<h3 id="11-during-the-compromise-at-what-time-did-windows-first-assign-special-privileges-to-a-new-logon">11. During the compromise, at what time did Windows first assign special privileges to a new logon?</h3>
+<p>Need to look into event viewer, of the file created date. Then looking into security log of that day. Open <code>Event Viewer</code> application and apply filter/search. There from last, look for Task Category <code>Security Group Management</code> and we got the date and time.</p>
+<p><img src="https://theanxiuser.github.io/writups/chapters/investigating-windows/event_viewer.png" alt="alt text" /></p>
+<h3 id="12-what-tool-was-used-to-get-windows-passwords">12. What tool was used to get Windows passwords?</h3>
+<p>By looking into TMP directory, we can findout the tool and it is <code>mimi****</code>.</p>
+<h3 id="13-what-was-the-attackers-external-control-and-command-servers-ip">13. What was the attackers external control and command servers IP?</h3>
+<p>Also known as C2 server, used to control the attacker machine from remote area. Need to look into hosts file which is found in the location <code>C:\Windows\System32\drivers\etc</code>. At last of the file we got the IP address, wher edomain is set to goodle.com</p>
+<h3 id="14-what-was-the-extension-name-of-the-shell-uploaded-via-the-servers-website">14. What was the extension name of the shell uploaded via the servers website?</h3>
+<p>Shell should be uploaded via web, so need to look into webroot directory. Lets look into wwwroot dir.
+This is in location <code>C:\inetpub\wwwroot</code>. The extension is found there.</p>
+<h3 id="15-what-was-the-last-port-the-attacker-opened">15. What was the last port the attacker opened?</h3>
+<p>The port should be open for communication and can be found in firewall rule. Lets look into firewall configuration.</p>
+<p>Inside Inbound Rules, there is a rule name <code>Allow outside connection for development</code>, looking into Protocols and Ports, we have the port opened by attacker as <code>13**</code>. </p>
+<h3 id="16-check-for-dns-poisoning-what-site-was-targeted">16. Check for DNS poisoning, what site was targeted?</h3>
+<p>We already have this answer in the hosts file, which is the domain name pointing to the attacker IP.</p>
+<p>This CTF covered the simple forensics of a compromised windows server and backtrace to the attacker.</p>
+<p>Happy Hacking !!</p>
+
+          </div>
+        </article>
+      </div>
+      
+    </div>
+  </div>
+</section>
+
+
+  
+  <section class="modal" id="search-modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+      <header class="modal-card-head">
+        <p class="modal-card-title">Search</p>
+      </header>
+      <section class="modal-card-body">
+        <div class="field mb-2">
+          <div class="control">
+            <input class="input" id="search" placeholder="Search this website." type="search" />
+          </div>
+        </div>
+        <div class="search-results">
+          <div class="search-results__items"></div>
+        </div>
+      </section>
+    </div>
+    <button aria-label="close" class="modal-close is-large"></button>
+  </section>
+  
+
+
+  
+
+<section class="section">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <nav class="level">
+              
+          <div class="level-item has-text-centered">
+            <a class="button is-black is-outlined" href="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;chapters&#x2F;overpass&#x2F;">
+              <span class="icon mr-2">
+                <i class="fas fa-arrow-circle-left"></i>
+              </span>
+              Overpass - TryHackMe Writup
+            </a>
+          </div>
+           
+          <div class="level-item has-text-centered">
+            <a class="button is-black is-outlined" href="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;chapters&#x2F;c4ptur3-th3-fl4g&#x2F;">
+              c4ptur3-th3-fl4g - TryHackMe Writup<span class="icon ml-2">
+                <i class="fas fa-arrow-circle-right"></i>
+              </span>
+            </a>
+          </div>
+          
+        </nav>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+  
+
+
+
+  
+  <footer class="footer py-4">
+    <div class="content has-text-centered">
+      <p>
+        Built with
+        <span class="icon-text">
+          <span class="icon">
+            <i class="fas fa-code"></i>
+          </span>
+          <span>code</span>
+        </span>
+        and
+        <span class="icon-text">
+          <span class="icon">
+            <i class="fas fa-heart"></i>
+          </span>
+          <span>love</span>
+        </span>
+      </p>
+      <p>
+        Powered by
+        <span class="icon-text">
+          <span class="icon">
+            <i class="fas fa-power-off"></i>
+          </span>
+          <span>zola</span>
+        </span>
+      </p>
+    </div>
+  </footer>
+  
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/galleria@1.6.1/dist/galleria.min.js" integrity="sha384-QSfwGT8/EU536DKdtyP2D6SLlh8zBaZ0cVkwfrwhqzIU9VCfJT00CLVP5t+HAiYg" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/galleria@1.6.1/dist/themes/folio/galleria.folio.min.js" integrity="sha384-DwpKI+deZB267+hPKwiOIc5Y2GKsVL0mR6hgz7GgIu7AgAMYqJwcJKY1YBNfhWcY" crossorigin="anonymous"></script>
+  
+  
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@8.13.5/dist/mermaid.min.js" integrity="sha384-0yWn54pSGtfKCU+skfA69l25VsCw+MZt4LQov3xNRoS7YkAMrFokGgSBnAWSK4pv" crossorigin="anonymous"></script>
+  
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.xkcd@1.1.13/dist/chart.xkcd.min.js" integrity="sha384-xC3h1+IHXK8seA+8KfT79Z4e0GPsznjXBoMa5nd8ooWKplPyXx92NOmljWxLC/cs" crossorigin="anonymous"></script>
+  
+  
+  <script src="https://theanxiuser.github.io/writups/elasticlunr.min.js"></script>
+  <script src="https://theanxiuser.github.io/writups/search_index.en.js"></script><script src="https://theanxiuser.github.io/writups/js/site.js"></script>
+
+  
+
+
+
+
+
+  
+  
+</body>
+
+</html>

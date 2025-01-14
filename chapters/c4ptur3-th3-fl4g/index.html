@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1" name="viewport" />
+  <meta content="#ffffff" name="theme-color" />
+  <meta content="#da532c" name="msapplication-TileColor" />
+
+  
+<link rel="canonical" href="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups/c4ptur3-th3-fl4g">
+<meta name="description" content="Try out the cryptography things">
+<meta name="keywords" content="c4ptur3-th3-fl4g, tryhackme, cryptography, cipher">
+<meta name="robots" content="index, follow">
+
+<meta property="og:title" content="c4ptur3-th3-fl4g - TryHackMe Writup">
+<meta property="og:description" content="Try out the cryptography things">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups/c4ptur3-th3-fl4g">
+<meta property="og:image" content="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups/images/avatar.jpg">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="c4ptur3-th3-fl4g - TryHackMe Writup">
+<meta name="twitter:description" content="Try out the cryptography things">
+<meta name="twitter:image" content="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups/images/avatar.jpg">
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups/c4ptur3-th3-fl4g"
+    },
+    "headline": "c4ptur3-th3-fl4g - TryHackMe Writup",
+    "description": "Try out the cryptography things",
+    "author": {
+      "@type": "Person",
+      "name": "вιѕнαℓυ"
+    },
+    "datePublished": "2024-10-23",
+    "image": "https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups/images/cover.jpg",
+    "publisher": {
+      "@type": "Organization",
+      "name": "Writups",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups/images/human_avatar.jpg"
+      }
+    },
+    "articleBody": "<div style="display: flex; align-items: center;">
+  <div>
+    <img src="ctf.png" alt="c4ptur3-th3-fl4g" width="100"/>
+  </div>
+  <div style="margin-left: 10px;">
+    <i>A beginner level CTF challenge</i>
+  </div>
+</div>
+<h2 id="task-1-translation-and-shifting">Task 1. Translation and Shifting</h2>
+<h3 id="1-c4n-y0u-c4p7u23-7h3-f149">1. c4n y0u c4p7u23 7h3 f149?</h3>
+<p>This is just translation, 4=a, 0=o, 7=t, 2=r, 3=e, 1=l.</p>
+<h3 id="2-01101100-01100101-01110100-01110011-00100000-01110100-01110010-01111001-00100000-01110011-01101111-01101101-01100101-00100000-01100010-01101001-01101110-01100001-01110010-01111001-00100000-01101111-01110101-01110100-00100001">2. 01101100 01100101 01110100 01110011 00100000 01110100 01110010 01111001 00100000 01110011 01101111 01101101 01100101 00100000 01100010 01101001 01101110 01100001 01110010 01111001 00100000 01101111 01110101 01110100 00100001</h3>
+<p>Here given is the combination of 1 byte, ie 8 bit. First need to convert this bytes into ASCII, and then corresponding characters.</p>
+<p>Can be used this site to convert <code>https://www.rapidtables.com/convert/number/binary-to-ascii.html</code>.</p>
+<h3 id="3-mjqxgzjtgiqgs4zaon2xazlsebrw63lnn5xca2loebbvirrhom">3. MJQXGZJTGIQGS4ZAON2XAZLSEBRW63LNN5XCA2LOEBBVIRRHOM======</h3>
+<p>This is in base32 form so need to decode into normal form. Can be used <code>https://www.dcode.fr/base-32-encoding</code>.</p>
+<h3 id="4-rwfjacbcyxnlnjqgzglnaxqgcmvwcmvzzw50cyblegfjdgx5idygyml0cybvzibkyxrhlg">4. RWFjaCBCYXNlNjQgZGlnaXQgcmVwcmVzZW50cyBleGFjdGx5IDYgYml0cyBvZiBkYXRhLg==</h3>
+<p>This is base64 encoded string, need to decode maybe using this site <code>https://www.base64decode.org/</code>.</p>
+<h3 id="5-68-65-78-61-64-65-63-69-6d-61-6c-20-6f-72-20-62-61-73-65-31-36-3f">5. 68 65 78 61 64 65 63 69 6d 61 6c 20 6f 72 20 62 61 73 65 31 36 3f</h3>
+<p>This is in hexadecimal format. Need to convert hex to ascii character, can be use this site <code>https://www.rapidtables.com/convert/number/hex-to-ascii.html</code>.</p>
+<h3 id="6-ebgngr-zr-13-cynprf">6. Ebgngr zr 13 cynprf!</h3>
+<p>This is in ratation form, Rot13. Can be used this site for decoding <code>https://cryptii.com/pipes/rot13-decoder</code>.</p>
+<h3 id="7-f-da-6-c-89e-c-f-5-323j-c-89e-c-f-5-wcf-e-6dx">7. *@F DA:? &gt;6 C:89E C@F?5 323J C:89E C@F?5 Wcf E:&gt;6DX</h3>
+<p>This is in rot 47 format. Use this site <code>https://www.dcode.fr/rot-47-cipher</code>.</p>
+<h3 id="8">8. - . .-.. . -.-. --- -- -- ..- -. .. -.-. .- - .. --- -.</h3>
+<h3 id="">. -. -.-. --- -.. .. -. --.</h3>
+<p>This is the morse coding. Use <code>https://morsecode.world/international/translator.html</code>.</p>
+<h3 id="9-85-110-112-97-99-107-32-116-104-105-115-32-66-67-68">9. 85 110 112 97 99 107 32 116 104 105 115 32 66 67 68</h3>
+<p>ASCII encoding, from decimal. Use site <code>https://www.coderstool.com/decimal-to-ascii</code>.</p>
+<h3 id="10-ls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gli0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gls0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gls0tls0gli0tls0gli0tls0gli0tls0gli0tls0gli0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gls0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gli0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gls0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gli0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gls0tls0gli0tls0gli0tls0gli0tls0gli0tls0gli0tls0kls0tls0gli0tls0gli0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gli0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gls0tls0gli0tls0gli0tls0gli0tls0gli0tls0gli0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gli0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gls0tls0gli0tls0gli0tls0gli0tls0gli0tls0gli0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gli0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gls0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gls0tls0gli0tls0gli0tls0gli0tls0gli0tls0gli0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gli0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gls0tls0gli0tls0gli0tls0gli0tls0gli0tls0gli0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gls0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gls0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gli0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gli0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gli0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gli0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gls0tls0gli0tls0gli0tls0gli0tls0gli0tls0gli0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gls0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gls0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gli0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gls0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gli0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gls0tls0gli0tls0gli0tls0gli0tls0gli0tls0gli0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gls0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gls0tls0gli0tls0gli0tls0gli0tls0gli0tls0gli0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gli0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gls0tls0gli0tls0gli0tls0gli0tls0gli0tls0gli0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gls0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gls0tls0gli0tls0gli0tls0gli0tls0gli0tls0gli0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gli0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gli0tls0gli0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gls0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gli0tls0gli0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gls0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gli0tls0gli0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gls0tls0gli0tls0">10. LS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0=</h3>
+<p>This contains multiple ciphers namely </p>
+<ul>
+<li>Cipher 1: Base64, Because there is <code>=</code> at last. After decoding we got morse code of format <code>----- .---- .----</code>.</li>
+<li>Cipher 2: Morse code, After using morse code encoding we get binary data.</li>
+<li>Cipher 3: Binary to ASCII, after convering we got data like <code>fe </code>_<code>``e</code>, which is in ROt47 format</li>
+<li>Cipher 4: ROT 47, we got <code>76 101 116 39 115 32 109 97 107 101 32 116 104 105 115 32 97 32 98 105 116 32 116 114 105 99 107 105 101 114 46 46 46</code>, which is in binary coded decimal format.</li>
+<li>Cipher 5: BCD to ASCI, finally we got the flag. This is <code>Let's make th********************</code>.</li>
+</ul>
+<h2 id="task-2-spectrograms">Task 2. Spectrograms</h2>
+<p>We downloaded the task file. As there mention, spectrogram is a visual representation of the spectrum of frequencies of a signal as it varies with time. </p>
+<p>We can simply use audio visualization tool like audacity to make this possible. </p>
+<p>After opening file in audacity, right click on file and change option from <code>Waveform to Spectrogram</code>, there we got the flag.
+And this is <code>super ****** *******</code>.</p>
+<h2 id="task-3-steganography">Task 3. Steganography</h2>
+<p>Steganography is the practice of concealing a file, message, image, or video within another file, message, image, or video.</p>
+<p>Here also need to download the task file which is a jpg file and need to revel the infromation.</p>
+<p>It seems there is a text file embeeded. Here we used the tool <code>steghide</code>.</p>
+<pre>
+steghide --info stegosteg_1559008553457.jpg
+"stegosteg_1559008553457.jpg":
+  format: jpeg
+  capacity: 2.5 KB
+Try to get information about embedded data ? (y/n) y
+Enter passphrase: 
+  embedded file "steganopayload2248.txt":
+    size: 13.0 Byte
+    encrypted: rijndael-128, cbc
+    compressed: yes
+</pre>
+<p>From above result we can see that, passphrase is asked but this is not required so we can just ignore this. </p>
+<pre>
+❯ steghide --extract -sf stegosteg_1559008553457.jpg
+Enter passphrase: 
+wrote extracted data to "steganopayload2248.txt".
+</pre>
+<p>Now we have the txt file and there is flag, <code>Spa**********</code>.</p>
+<h2 id="task-4-security-through-obscurity">Task 4. Security through obscurity</h2>
+<p>Security through obscurity is the reliance in security engineering on the secrecy of the design or implementation as the main method of providing security for a system or component of a system.</p>
+<p>There is also the file, first need to download and do all required activity.</p>
+<p>Current filename and extension is <code>meme_1559010886025.jpg</code>, but we need to find out first filename and extension.</p>
+<p>We use this command <code>strings meme_1559010886025.jpg</code> and got the first answer as <code>hac*******.png</code> at last.</p>
+<p>One line above this line we have the message, which is <code>AHH_YO**********!</code>.</p>
+<p>This Challenge provides diverse field of cryptograpic problems. Which is really good to know.</p>
+<p>Happy Hacking !!</p>
+"
+  }
+  </script>
+   
+
+
+  
+  
+  <link href='&#x2F;icons&#x2F;site.webmanifest' rel="manifest" />
+  
+  
+  <link color="#5bbad5" href='&#x2F;icons&#x2F;safari-pinned-tab.svg' rel="mask-icon" />
+  
+  
+  <link href='&#x2F;icons&#x2F;favicon-16x16.png' rel="icon" sizes="16x16" type="image/png" />
+  
+  
+  <link href='&#x2F;icons&#x2F;favicon-32x32.png' rel="icon" sizes="32x32" type="image/png" />
+  
+  
+  <link href='&#x2F;icons&#x2F;apple-touch-icon.png' rel="apple-touch-icon" sizes="180x180" />
+  
+
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/galleria@1.6.1/dist/themes/folio/galleria.folio.min.css" integrity="sha384-+rY0QD+LRnTOquDMzGa9lXU6jIwdiQuwCJQ2cdcW0qeP/0UbjQCZlXnRsUMA+9pH" crossorigin="anonymous">
+  
+
+  
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1.9.1/css/academicons.min.css" integrity="sha384-FIue+PI4SsI9XfHCz8dBLg33b0c1fMJgNU3X//L26FYbGnlSEfWmNT7zgWc2N9b6" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link href="https://theanxiuser.github.io/writups/deep-thought.css" rel="stylesheet" />
+  
+  
+
+  <title>
+    
+Writups | c4ptur3-th3-fl4g - TryHackMe Writup
+
+  </title>
+
+  
+  
+  
+
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.css" integrity="sha384-R4558gYOUz8mP9YWpZJjofhk+zx0AS11p36HnD2ZKj/6JR5z27gSSULCNHIRReVs" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.js" integrity="sha384-z1fJDqw8ZApjGO3/unPWUPsIymfsJmyrDVWC8Tv/a1HeOtGmkwNd/7xUS0Xcnvsx" crossorigin="anonymous"></script>
+
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/contrib/mathtex-script-type.min.js" integrity="sha384-jiBVvJ8NGGj5n7kJaiWwWp9AjC+Yh8rhZY3GtAX8yU28azcLgoRo4oukO87g7zDT" crossorigin="anonymous"></script>
+  
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/contrib/auto-render.min.js" integrity="sha384-+XBljXPPiv+OzfbB3cVmLHf4hdUFHlWNZN5spNQ7rmHTXpd7WvJum6fIACpNNfIR" crossorigin="anonymous"></script>
+  
+  
+</head>
+
+<body class="has-background-white">
+  <nav aria-label="section navigation" class="navbar is-light" role="navigation">
+    <div class="container">
+      <div class="navbar-brand">
+        <a class="navbar-item is-size-5 has-text-weight-bold" href="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups">Writups</a>
+        <a aria-expanded="false" aria-label="menu" class="navbar-burger burger" data-target="navMenu" role="button">
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+        </a>
+      </div>
+      <div class="navbar-menu" id="navMenu">
+        <div class="navbar-end has-text-centered">
+          
+          
+          
+          <a class="navbar-item has-text-weight-semibold" href="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;">
+            Home
+          </a>
+          
+          <a class="navbar-item has-text-weight-semibold" href="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;chapters">
+            Chapters
+          </a>
+          
+          <a class="navbar-item has-text-weight-semibold" href="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;tags">
+            Tags
+          </a>
+          
+          <a class="navbar-item has-text-weight-semibold" href="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;categories">
+            Categories
+          </a>
+          
+          
+          
+          <a class="navbar-item" id="nav-search" title="Search" data-target="#search-modal">
+            <span class="icon">
+              <i class="fas fa-search"></i>
+            </span>
+          </a>
+          <a class="navbar-item" id="dark-mode" title="Switch to dark theme">
+            <span class="icon">
+              <i class="fas fa-adjust"></i>
+            </span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  
+  
+
+  
+<section class="section">
+  <div class="container">
+    <div class="columns">
+      <div class="column is-8 is-offset-2">
+        <article class="box">
+          <h1 class="title">
+            c4ptur3-th3-fl4g - TryHackMe Writup
+          </h1>
+          <p class="subtitle">Try out the cryptography things</p>
+          <div class="columns is-multiline is-gapless">
+            <div class="column is-8">
+              
+<span class="icon-text has-text-grey">
+  <span class="icon">
+    <i class="fas fa-user"></i>
+  </span>
+  <span>вιѕнαℓυ published on</span>
+  <span class="icon">
+    <i class="far fa-calendar-alt"></i>
+  </span>
+  <span><time datetime="2024-10-23">October 23, 2024</time></span>
+</span>
+
+            </div>
+            <div class="column is-4 has-text-right-desktop">
+              
+<span class="icon-text has-text-grey">
+  <span class="icon">
+    <i class="far fa-clock"></i>
+  </span>
+  <span>4 min,</span>
+  <span class="icon">
+    <i class="fas fa-pencil-alt"></i>
+  </span>
+  <span>735 words</span>
+</span>
+
+            </div>
+            <div class="column">
+              
+              
+<p>
+  Categories:
+  
+  <a class="has-text-info-dark has-text-weight-semibold" href="https://theanxiuser.github.io/writups/categories/tryhackme/">
+    <span class="icon-text">
+      <span class="icon">
+        <i class="fas fa-cube"></i>
+      </span>
+      <span>TryHackMe</span>
+    </span>
+  </a>
+  
+  <a class="has-text-info-dark has-text-weight-semibold" href="https://theanxiuser.github.io/writups/categories/writups/">
+    <span class="icon-text">
+      <span class="icon">
+        <i class="fas fa-cube"></i>
+      </span>
+      <span>Writups</span>
+    </span>
+  </a>
+  
+</p>
+
+              
+            </div>
+            <div class="column has-text-right-desktop">
+              
+              
+<p>
+  Tags:
+  
+  <a class="has-text-info-dark has-text-weight-semibold" href="https://theanxiuser.github.io/writups/tags/c4ptur3-th3-fl4g/">
+    <span class="icon-text">
+      <span class="icon">
+        <i class="fas fa-tag"></i>
+      </span>
+      <span>c4ptur3-th3-fl4g</span>
+    </span>
+  </a>
+  
+  <a class="has-text-info-dark has-text-weight-semibold" href="https://theanxiuser.github.io/writups/tags/tryhackme/">
+    <span class="icon-text">
+      <span class="icon">
+        <i class="fas fa-tag"></i>
+      </span>
+      <span>tryhackme</span>
+    </span>
+  </a>
+  
+  <a class="has-text-info-dark has-text-weight-semibold" href="https://theanxiuser.github.io/writups/tags/cryptography/">
+    <span class="icon-text">
+      <span class="icon">
+        <i class="fas fa-tag"></i>
+      </span>
+      <span>cryptography</span>
+    </span>
+  </a>
+  
+  <a class="has-text-info-dark has-text-weight-semibold" href="https://theanxiuser.github.io/writups/tags/cipher/">
+    <span class="icon-text">
+      <span class="icon">
+        <i class="fas fa-tag"></i>
+      </span>
+      <span>cipher</span>
+    </span>
+  </a>
+  
+</p>
+
+              
+            </div>
+          </div>
+          <div class="content mt-2">
+            <div style="display: flex; align-items: center;">
+  <div>
+    <img src="ctf.png" alt="c4ptur3-th3-fl4g" width="100"/>
+  </div>
+  <div style="margin-left: 10px;">
+    <i>A beginner level CTF challenge</i>
+  </div>
+</div>
+<h2 id="task-1-translation-and-shifting">Task 1. Translation and Shifting</h2>
+<h3 id="1-c4n-y0u-c4p7u23-7h3-f149">1. c4n y0u c4p7u23 7h3 f149?</h3>
+<p>This is just translation, 4=a, 0=o, 7=t, 2=r, 3=e, 1=l.</p>
+<h3 id="2-01101100-01100101-01110100-01110011-00100000-01110100-01110010-01111001-00100000-01110011-01101111-01101101-01100101-00100000-01100010-01101001-01101110-01100001-01110010-01111001-00100000-01101111-01110101-01110100-00100001">2. 01101100 01100101 01110100 01110011 00100000 01110100 01110010 01111001 00100000 01110011 01101111 01101101 01100101 00100000 01100010 01101001 01101110 01100001 01110010 01111001 00100000 01101111 01110101 01110100 00100001</h3>
+<p>Here given is the combination of 1 byte, ie 8 bit. First need to convert this bytes into ASCII, and then corresponding characters.</p>
+<p>Can be used this site to convert <code>https://www.rapidtables.com/convert/number/binary-to-ascii.html</code>.</p>
+<h3 id="3-mjqxgzjtgiqgs4zaon2xazlsebrw63lnn5xca2loebbvirrhom">3. MJQXGZJTGIQGS4ZAON2XAZLSEBRW63LNN5XCA2LOEBBVIRRHOM======</h3>
+<p>This is in base32 form so need to decode into normal form. Can be used <code>https://www.dcode.fr/base-32-encoding</code>.</p>
+<h3 id="4-rwfjacbcyxnlnjqgzglnaxqgcmvwcmvzzw50cyblegfjdgx5idygyml0cybvzibkyxrhlg">4. RWFjaCBCYXNlNjQgZGlnaXQgcmVwcmVzZW50cyBleGFjdGx5IDYgYml0cyBvZiBkYXRhLg==</h3>
+<p>This is base64 encoded string, need to decode maybe using this site <code>https://www.base64decode.org/</code>.</p>
+<h3 id="5-68-65-78-61-64-65-63-69-6d-61-6c-20-6f-72-20-62-61-73-65-31-36-3f">5. 68 65 78 61 64 65 63 69 6d 61 6c 20 6f 72 20 62 61 73 65 31 36 3f</h3>
+<p>This is in hexadecimal format. Need to convert hex to ascii character, can be use this site <code>https://www.rapidtables.com/convert/number/hex-to-ascii.html</code>.</p>
+<h3 id="6-ebgngr-zr-13-cynprf">6. Ebgngr zr 13 cynprf!</h3>
+<p>This is in ratation form, Rot13. Can be used this site for decoding <code>https://cryptii.com/pipes/rot13-decoder</code>.</p>
+<h3 id="7-f-da-6-c-89e-c-f-5-323j-c-89e-c-f-5-wcf-e-6dx">7. *@F DA:? &gt;6 C:89E C@F?5 323J C:89E C@F?5 Wcf E:&gt;6DX</h3>
+<p>This is in rot 47 format. Use this site <code>https://www.dcode.fr/rot-47-cipher</code>.</p>
+<h3 id="8">8. - . .-.. . -.-. --- -- -- ..- -. .. -.-. .- - .. --- -.</h3>
+<h3 id="">. -. -.-. --- -.. .. -. --.</h3>
+<p>This is the morse coding. Use <code>https://morsecode.world/international/translator.html</code>.</p>
+<h3 id="9-85-110-112-97-99-107-32-116-104-105-115-32-66-67-68">9. 85 110 112 97 99 107 32 116 104 105 115 32 66 67 68</h3>
+<p>ASCII encoding, from decimal. Use site <code>https://www.coderstool.com/decimal-to-ascii</code>.</p>
+<h3 id="10-ls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gli0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gls0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gls0tls0gli0tls0gli0tls0gli0tls0gli0tls0gli0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gls0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gli0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gls0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gli0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gls0tls0gli0tls0gli0tls0gli0tls0gli0tls0gli0tls0kls0tls0gli0tls0gli0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gli0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gls0tls0gli0tls0gli0tls0gli0tls0gli0tls0gli0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gli0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gls0tls0gli0tls0gli0tls0gli0tls0gli0tls0gli0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gli0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gls0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gls0tls0gli0tls0gli0tls0gli0tls0gli0tls0gli0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gli0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gls0tls0gli0tls0gli0tls0gli0tls0gli0tls0gli0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gls0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gls0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gli0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gli0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gli0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gli0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gls0tls0gli0tls0gli0tls0gli0tls0gli0tls0gli0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gls0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gls0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gli0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gls0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gli0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gls0tls0gli0tls0gli0tls0gli0tls0gli0tls0gli0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gls0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gls0tls0gli0tls0gli0tls0gli0tls0gli0tls0gli0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gli0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gls0tls0gli0tls0gli0tls0gli0tls0gli0tls0gli0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gls0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gls0tls0gli0tls0gli0tls0gli0tls0gli0tls0gli0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gli0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gli0tls0gli0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gls0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gli0tls0gli0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gls0tls0gli0tls0kls0tls0gls0tls0gli0tls0gls0tls0gls0tls0gls0tls0gls0tls0gls0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gls0tls0gli0tls0gli0tls0kls0tls0gli0tls0gli0tls0gls0tls0gls0tls0gli0tls0gls0tls0gli0tls0">10. LS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0KLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLS0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLi0tLS0KLS0tLS0gLi0tLS0gLi0tLS0gLS0tLS0gLS0tLS0gLi0tLS0gLS0tLS0gLi0tLS0=</h3>
+<p>This contains multiple ciphers namely </p>
+<ul>
+<li>Cipher 1: Base64, Because there is <code>=</code> at last. After decoding we got morse code of format <code>----- .---- .----</code>.</li>
+<li>Cipher 2: Morse code, After using morse code encoding we get binary data.</li>
+<li>Cipher 3: Binary to ASCII, after convering we got data like <code>fe </code>_<code>``e</code>, which is in ROt47 format</li>
+<li>Cipher 4: ROT 47, we got <code>76 101 116 39 115 32 109 97 107 101 32 116 104 105 115 32 97 32 98 105 116 32 116 114 105 99 107 105 101 114 46 46 46</code>, which is in binary coded decimal format.</li>
+<li>Cipher 5: BCD to ASCI, finally we got the flag. This is <code>Let's make th********************</code>.</li>
+</ul>
+<h2 id="task-2-spectrograms">Task 2. Spectrograms</h2>
+<p>We downloaded the task file. As there mention, spectrogram is a visual representation of the spectrum of frequencies of a signal as it varies with time. </p>
+<p>We can simply use audio visualization tool like audacity to make this possible. </p>
+<p>After opening file in audacity, right click on file and change option from <code>Waveform to Spectrogram</code>, there we got the flag.
+And this is <code>super ****** *******</code>.</p>
+<h2 id="task-3-steganography">Task 3. Steganography</h2>
+<p>Steganography is the practice of concealing a file, message, image, or video within another file, message, image, or video.</p>
+<p>Here also need to download the task file which is a jpg file and need to revel the infromation.</p>
+<p>It seems there is a text file embeeded. Here we used the tool <code>steghide</code>.</p>
+<pre>
+steghide --info stegosteg_1559008553457.jpg
+"stegosteg_1559008553457.jpg":
+  format: jpeg
+  capacity: 2.5 KB
+Try to get information about embedded data ? (y/n) y
+Enter passphrase: 
+  embedded file "steganopayload2248.txt":
+    size: 13.0 Byte
+    encrypted: rijndael-128, cbc
+    compressed: yes
+</pre>
+<p>From above result we can see that, passphrase is asked but this is not required so we can just ignore this. </p>
+<pre>
+❯ steghide --extract -sf stegosteg_1559008553457.jpg
+Enter passphrase: 
+wrote extracted data to "steganopayload2248.txt".
+</pre>
+<p>Now we have the txt file and there is flag, <code>Spa**********</code>.</p>
+<h2 id="task-4-security-through-obscurity">Task 4. Security through obscurity</h2>
+<p>Security through obscurity is the reliance in security engineering on the secrecy of the design or implementation as the main method of providing security for a system or component of a system.</p>
+<p>There is also the file, first need to download and do all required activity.</p>
+<p>Current filename and extension is <code>meme_1559010886025.jpg</code>, but we need to find out first filename and extension.</p>
+<p>We use this command <code>strings meme_1559010886025.jpg</code> and got the first answer as <code>hac*******.png</code> at last.</p>
+<p>One line above this line we have the message, which is <code>AHH_YO**********!</code>.</p>
+<p>This Challenge provides diverse field of cryptograpic problems. Which is really good to know.</p>
+<p>Happy Hacking !!</p>
+
+          </div>
+        </article>
+      </div>
+      
+    </div>
+  </div>
+</section>
+
+
+  
+  <section class="modal" id="search-modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+      <header class="modal-card-head">
+        <p class="modal-card-title">Search</p>
+      </header>
+      <section class="modal-card-body">
+        <div class="field mb-2">
+          <div class="control">
+            <input class="input" id="search" placeholder="Search this website." type="search" />
+          </div>
+        </div>
+        <div class="search-results">
+          <div class="search-results__items"></div>
+        </div>
+      </section>
+    </div>
+    <button aria-label="close" class="modal-close is-large"></button>
+  </section>
+  
+
+
+  
+
+<section class="section">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <nav class="level">
+              
+          <div class="level-item has-text-centered">
+            <a class="button is-black is-outlined" href="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;chapters&#x2F;investigating-windows&#x2F;">
+              <span class="icon mr-2">
+                <i class="fas fa-arrow-circle-left"></i>
+              </span>
+              Investigating Windows - TryHackMe Writup
+            </a>
+          </div>
+           
+          <div class="level-item has-text-centered">
+            <a class="button is-black is-outlined" href="https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;chapters&#x2F;attacktive-directory&#x2F;">
+              Attacktive Directory - TryHackMe Writup<span class="icon ml-2">
+                <i class="fas fa-arrow-circle-right"></i>
+              </span>
+            </a>
+          </div>
+          
+        </nav>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+  
+
+
+
+  
+  <footer class="footer py-4">
+    <div class="content has-text-centered">
+      <p>
+        Built with
+        <span class="icon-text">
+          <span class="icon">
+            <i class="fas fa-code"></i>
+          </span>
+          <span>code</span>
+        </span>
+        and
+        <span class="icon-text">
+          <span class="icon">
+            <i class="fas fa-heart"></i>
+          </span>
+          <span>love</span>
+        </span>
+      </p>
+      <p>
+        Powered by
+        <span class="icon-text">
+          <span class="icon">
+            <i class="fas fa-power-off"></i>
+          </span>
+          <span>zola</span>
+        </span>
+      </p>
+    </div>
+  </footer>
+  
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/galleria@1.6.1/dist/galleria.min.js" integrity="sha384-QSfwGT8/EU536DKdtyP2D6SLlh8zBaZ0cVkwfrwhqzIU9VCfJT00CLVP5t+HAiYg" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/galleria@1.6.1/dist/themes/folio/galleria.folio.min.js" integrity="sha384-DwpKI+deZB267+hPKwiOIc5Y2GKsVL0mR6hgz7GgIu7AgAMYqJwcJKY1YBNfhWcY" crossorigin="anonymous"></script>
+  
+  
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@8.13.5/dist/mermaid.min.js" integrity="sha384-0yWn54pSGtfKCU+skfA69l25VsCw+MZt4LQov3xNRoS7YkAMrFokGgSBnAWSK4pv" crossorigin="anonymous"></script>
+  
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.xkcd@1.1.13/dist/chart.xkcd.min.js" integrity="sha384-xC3h1+IHXK8seA+8KfT79Z4e0GPsznjXBoMa5nd8ooWKplPyXx92NOmljWxLC/cs" crossorigin="anonymous"></script>
+  
+  
+  <script src="https://theanxiuser.github.io/writups/elasticlunr.min.js"></script>
+  <script src="https://theanxiuser.github.io/writups/search_index.en.js"></script><script src="https://theanxiuser.github.io/writups/js/site.js"></script>
+
+  
+
+
+
+
+
+  
+  
+</body>
+
+</html>

